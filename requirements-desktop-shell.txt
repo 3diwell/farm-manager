@@ -1,0 +1,28 @@
+# ============================================================
+#  3DIWELL Farm Manager — окно программы и клиент (Desktop.exe, Client.exe)
+# ============================================================
+#  16.10.2026 (R-149): точные версии = состав выпуска Alpha 3.0 (BUILD_ENVIRONMENT.txt,
+#  раздел «Окно и клиент»). Это ОТДЕЛЬНОЕ окружение — C:\3DIWELL_Builds\buildenv — со своими
+#  версиями (cryptography, cffi, PyInstaller здесь другие, чем у сервера), поэтому файл не
+#  подключает requirements.txt.
+#  Python 3.14: pythonnet 3.1.0 требует Python ниже 3.15.
+#  Установка в buildenv:
+#      C:\3DIWELL_Builds\buildenv\Scripts\python.exe -m pip install -r requirements-desktop-shell.txt
+#  tools/build_release.py сверяет buildenv с этим файлом ДО сборки.
+# ============================================================
+pywebview==6.2.1
+pythonnet==3.1.0
+clr_loader==0.3.1
+bottle==0.13.4
+proxy_tools==0.1.0
+cryptography==49.0.0
+cffi==2.1.0
+pycparser==3.0
+typing_extensions==4.16.0
+pyinstaller==6.21.0
+pyinstaller-hooks-contrib==2026.6
+altgraph==0.17.5
+pefile==2024.8.26
+pywin32-ctypes==0.2.3
+packaging==26.2
+setuptools==83.0.0

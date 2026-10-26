@@ -1,0 +1,62 @@
+FFmpeg в составе 3DIWELL Farm Manager
+=====================================
+
+Официальные сборки 3DIWELL Farm Manager содержат программу FFmpeg (ffmpeg.exe). Она вложена в
+основной файл программы и запускается как отдельная программа — чтобы передавать видео камер
+принтеров Bambu Lab без перекодирования и получать кадры с камер. Код 3DIWELL Farm Manager с
+FFmpeg не связывается.
+
+Версия:    FFmpeg 8.1.1, сборка «essentials» для Windows (64 бита, статическая) с сайта
+           https://www.gyan.dev/ffmpeg/builds/
+Лицензия:  GNU General Public License, версия 3 (сборка выполнена с --enable-gpl
+           --enable-version3). Полный текст лицензии — файл GPL-3.0.txt в этой папке.
+Авторы:    разработчики FFmpeg (https://ffmpeg.org); сборка — Gyan Doshi (https://www.gyan.dev).
+
+Исходный код
+  FFmpeg 8.1.1:     https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz
+                    (репозиторий https://git.ffmpeg.org/ffmpeg.git, метка n8.1.1)
+  Сборка gyan.dev:  https://www.gyan.dev/ffmpeg/builds/
+  Параметры сборки (вывод «ffmpeg -version»):
+    --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect
+    --enable-cairo --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2
+    --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh
+    --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264
+    --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx
+    --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi
+    --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf
+    --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va
+    --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi
+    --enable-openal --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb
+    --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm
+    --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis
+    --enable-librubberband
+
+Предложение исходного кода
+  По запросу в техподдержку 3DIWELL (контакты — в окне «О программе») мы бесплатно предоставим
+  полный исходный код этой сборки FFmpeg вместе с исходным кодом включённых в неё библиотек.
+  Предложение действует не меньше трёх лет после последней выдачи этой версии
+  3DIWELL Farm Manager и всё время, пока программа поддерживается.
+
+FFmpeg is a trademark of Fabrice Bellard, originator of the FFmpeg project.
+
+
+FFmpeg in 3DIWELL Farm Manager
+==============================
+
+Official builds of 3DIWELL Farm Manager contain the FFmpeg program (ffmpeg.exe). It is embedded in
+the main program file and run as a separate program to relay Bambu Lab printer camera video without
+re-encoding and to take camera frames. 3DIWELL Farm Manager code is not linked with FFmpeg.
+
+Version:   FFmpeg 8.1.1, "essentials" build for Windows (64-bit, static) from
+           https://www.gyan.dev/ffmpeg/builds/
+License:   GNU General Public License, version 3 (built with --enable-gpl --enable-version3).
+           The full license text is GPL-3.0.txt in this folder.
+Authors:   the FFmpeg developers (https://ffmpeg.org); build by Gyan Doshi (https://www.gyan.dev).
+
+Source code: https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz (git tag n8.1.1); build information:
+https://www.gyan.dev/ffmpeg/builds/; build configuration as listed above.
+
+Written offer: on request to 3DIWELL support (contacts are in the "About" window) we will provide,
+free of charge, the complete corresponding source code of this FFmpeg build together with the
+source code of the libraries it includes. This offer is valid for at least three years after the
+last distribution of this version of 3DIWELL Farm Manager and for as long as it is supported.

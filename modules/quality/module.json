@@ -1,0 +1,8 @@
+{
+  "id": "quality",
+  "ru": "Аналитика качества",
+  "en": "Quality analytics",
+  "version": "0.2.3",
+  "icon": "activity",
+  "entry": "web/QualityPanel.js"
+}

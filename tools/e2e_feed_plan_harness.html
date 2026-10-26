@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!--
+  SPDX-License-Identifier: MPL-2.0
+  SPDX-FileCopyrightText: 2025-2026 3DiWell Team
+  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+  If a copy of the MPL was not distributed with this file, You can obtain one at
+  https://mozilla.org/MPL/2.0/.
+-->
+<!-- Харнесс UI-фазы 5A3b «Источник материала» (Alpha 2.745, dry-run). Монтирует НАСТОЯЩУЮ разметку
+     из web/index.html с НАСТОЯЩИМИ функциями из web/app.js и НАСТОЯЩИМ вендорным Vue.
+     Все fetch перехвачены: ни один реальный endpoint не вызывается, а любой запрос к /start,
+     печати, отправке, очереди, планировщику или plate-clear немедленно валит сценарий. -->
+<meta charset="utf-8">
+<link rel="stylesheet" href="/web/vendor/tailwind.css">
+<link rel="stylesheet" href="/web/design/palette.css">
+<link rel="stylesheet" href="/web/app.css">
+<style>body{background:var(--fm-surface-app,#111);margin:0;padding:12px}</style>
+<script type="importmap">{"imports":{"vue":"/web/vendor/vue.esm-browser.js"}}</script>
+<div id="app"></div>
+<pre id="out" style="color:#8f8;font:12px monospace;white-space:pre-wrap"></pre>
+<script type="module">
+import("/tools/e2e_feed_plan_harness.js?v=" + Date.now()).catch(e=>{window.__E2E_ERR=String(e&&e.stack||e);document.getElementById("out").textContent="IMPORT ERROR: "+window.__E2E_ERR;});
+</script>

@@ -1,0 +1,4 @@
+# Byte-exact storage: disable ALL end-of-line normalization so files are
+# committed and restored exactly as-is. This protects fragile files such as
+# web/app.css (documented "broken" UTF-8 tail) and the buildless assets.
+* -text

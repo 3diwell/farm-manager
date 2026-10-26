@@ -1,0 +1,45 @@
+{
+  "source": "Android_Operation_Hints_v06_Approved",
+  "assets": [
+    {
+      "source": "printer-portal.svg",
+      "output": "hint_printer.png",
+      "width": 343,
+      "height": 384,
+      "svgSha256": "cfa65cf1dd3b780398022dd2c2eb23c2322efc9024e7ac41021f48e3d20a0000",
+      "pngSha256": "450352546c8d030525c3338ac5a268cd3bfa5f7f041680df1123d2a11a0c7503"
+    },
+    {
+      "source": "warehouse-spool-rack.svg",
+      "output": "hint_warehouse.png",
+      "width": 364,
+      "height": 384,
+      "svgSha256": "7a3db42878571b221200aae54e66784188741b7d873be4d95d5a8301b6ab0801",
+      "pngSha256": "0c6924b7d31cfc09d8239412c756b2013bf4116ff20dd005372e3abc7169b60b"
+    },
+    {
+      "source": "spool-full-black.svg",
+      "output": "hint_spool_full.png",
+      "width": 299,
+      "height": 384,
+      "svgSha256": "4a69f95c00c3c8ac16667f8a6710d22f238d5542d64bb32805d48a4b3946aba8",
+      "pngSha256": "50f90b24e3a02729492070e218d7645fe5027741375069dc4c3cea3a1a8351fd"
+    },
+    {
+      "source": "spool-low-black.svg",
+      "output": "hint_spool_low.png",
+      "width": 299,
+      "height": 384,
+      "svgSha256": "c99bc726407ba5a7fe74deb83edd46b55397886074580627589912a963fab5d2",
+      "pngSha256": "d29ea3ffb1cd2063fde9b7e0e7ae2c0aaaaa085e1dd7224bd59cff0c9163d934"
+    },
+    {
+      "source": "brand-check.svg",
+      "output": "hint_brand_check.png",
+      "width": 384,
+      "height": 279,
+      "svgSha256": "8e5dac4a2092ab2d2e34080830302aaa63503070fda0d8e5e2c0338a1858ca21",
+      "pngSha256": "23fa0d515e8271bd61b3b7be3cd936cc92c63b241857da7aec0b2cfa9ad952d1"
+    }
+  ]
+}

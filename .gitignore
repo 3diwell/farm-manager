@@ -1,0 +1,192 @@
+# ============================================================================
+#  3DIWELL Farm Manager — .gitignore
+#  Excludes generated files, build artifacts, caches, logs, databases and
+#  user/runtime data. Application source (server.py, app/, web/, modules/,
+#  build scripts, assets) IS tracked.
+# ============================================================================
+
+# --- Python bytecode / caches ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- PyInstaller / build outputs & installer ---
+build/
+dist/
+/installer/
+*.manifest
+*.spec.bak
+
+# --- Databases & user data (never committed) ---
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.bak_premove
+*.db.bak_premove
+
+# --- Runtime data folders (live in DATA_DIR at runtime; ignored if present locally) ---
+project_files/
+slicer_uploads/
+temp_files/
+backups/
+thumb_cache/
+
+# --- Logs ---
+# --- Локальная очередь задач (этап 4A) ---
+#  Runtime очереди переносится вместе с папкой проекта по USB, но в Git не
+#  хранится: это рабочее состояние машины, а не исходник.
+.ai/runtime/
+
+logs/
+*.log
+
+# --- Archives / packaged modules ---
+#  Ни один .zip в Git не хранится: zip модуля — ВЫХОД сборщика, а не исходник
+#  (правило проверяется `tools/test_repository_hygiene.py`, проверка 4x).
+#  Это же касается .ai/archive/*.zip — замороженной истории контекста: она живёт на диске
+#  и переносится вместе с папкой проекта по USB (переносится папка целиком, включая
+#  неотслеживаемые файлы). Контрольные суммы архива отслеживаются отдельно
+#  в `.ai/archive/SHA256SUMS.txt`, чтобы целостность можно было проверить после переноса.
+*.zip
+
+# --- Node / JS tooling (only if introduced later; SPA is currently buildless) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================================
+#  Alpha 2.837 — CLEAN WORKSPACE CONTRACT
+#  Generated, temporary and machine-specific files must NOT live in the project
+#  folder. The external build root is C:\3DIWELL_Builds (see docs/REPOSITORY_LAYOUT.md).
+#  Every rule below was added with proof: it matched a real artifact found by
+#  tools/repository_audit.py, or it guards a directory the build/test tooling
+#  is known to create.
+# ============================================================================
+
+# --- PyInstaller work / caches / unpacked bundles ---
+work/
+*.workpath/
+_unpacked/
+*_unpacked/
+
+# --- Staging of finished builds (belongs to the external build root) ---
+staging/
+installer_archive/
+Alpha_[0-9]*/
+Release_[0-9]*/
+
+# --- Local build environment (never portable between computers) ---
+buildenv/
+.buildenv/
+
+# --- Browser profiles and artifacts of browser tests ---
+fm_cdp_*/
+fm_stage*/
+fm_eval_*.js
+*.edge-profile/
+tools/_e2e_payload.json
+tools/*_report.json
+tools/screenshots/
+
+# --- Mutation-proof temporary copies ---
+tools/.mutation_pristine/
+*.mutation_bak
+*.bak_mutation
+*.orig_sha256
+
+# --- Production config / data (live in DATA_DIR, never in the repository) ---
+/config.json
+/farm_*.db
+
+# --- Backup files downloaded by the user (ROOT only; test fixtures stay tracked) ---
+/*.3diwell-backup
+
+# --- Node caches ---
+.npm/
+.node_repl_history
+
+# --- Claude Code: личные настройки машины (не переносятся между компьютерами) ---
+#  .claude/launch.json остаётся отслеживаемым: это настройка проекта, а не машины.
+#  .claude/skills/** тоже отслеживается: чеклисты проверок — часть проекта.
+.claude/settings.local.json
+.claude/settings.json.bak
+
+# --- Папка-приёмник входящих файлов (рабочее состояние машины, не исходник) ---
+_incoming/
+
+# --- Safety net: these MUST stay tracked whatever a rule above may match ---
+!tools/fixtures/
+!tools/fixtures/**
+!docs/**
+!printer_covers/**
+!web/vendor/**
+!modules/**/web/**
+
+# ============================================================================
+#  NOTE — intentionally TRACKED (do not add to ignore):
+#    server.py, app/**, web/** (incl. vendor/ and assets/), modules/inventory/**,
+#    printer_covers/*.png, build.bat, 3diwell.spec,
+#    3diwell-setup.iss, requirements.txt, AGENTS.md, README/LICENSE, .ai/**
+#
+#  ffmpeg.exe (~99 MB) is a required bundled binary for the build. It is NOT
+#  ignored here so the checkpoint is build-complete. If you prefer to keep the
+#  repository small, add "ffmpeg.exe" below and store it outside git.
+# ============================================================================
+
+# --- 26.09.2026: ключи, лицензии, файлы окружения и сборки Android — никогда не в Git ---
+#  Закрытые ключи поставщика (подпись лицензий и пакетов модулей) хранятся ОТДЕЛЬНО от проекта,
+#  покупательские лицензии (*.fmlic) и файлы окружения — тоже. Правила стоят ПОСЛЕ страховочных
+#  исключений выше, поэтому действуют и внутри docs/, modules/, tools/fixtures/.
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.p8
+.env
+.env.*
+*.fmlic
+keys/
+secrets/
+*.apk
+*.aab
+
+# --- 16.10.2026 (R-149): OpenAI Codex — копия .claude/skills, которую Codex сам создаёт раз в сутки
+#  (импорт «Keep imports in sync»). Codex читает её с диска, git она не нужна; без этой строки кнопки
+#  «ОТПРАВИТЬ» и «ЗАБРАТЬ» останавливались на новой папке.
+.agents/
+# --- 16.10.2026: временные рабочие копии проекта (git worktree), которые Claude Code создаёт для
+#  параллельной работы. Это не исходники: в git им не место, на Диск — тоже.
+.claude/worktrees/
+
+# 24.10.2026: архив исходников приложения Android, присланный Алексом (97 МБ); сами исходники — в android/
+modules/Android_app/

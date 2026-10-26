@@ -1,0 +1,53 @@
+{
+  "fixtures": [
+    {
+      "byte_length": 4860,
+      "expected": {
+        "container_format_version": 2,
+        "core_machine_bound": {
+          "archive_dir": "",
+          "data_dir": "D:\\FrozenMD\\data",
+          "server_port": 8000,
+          "slicer_path": ""
+        },
+        "core_values": {
+          "lan_access_enabled": true,
+          "modules_disabled": [],
+          "net_monitor": true,
+          "printer_files_delete_enabled": false,
+          "printer_files_read_enabled": false,
+          "project_print_enabled": true,
+          "security_enabled": false,
+          "slicer_callback_enabled": true
+        },
+        "inventory_settings": {
+          "currency": "RUB"
+        },
+        "inventory_spool_ids": [
+          "fx-spool"
+        ],
+        "module_ids": [
+          "cost",
+          "inventory",
+          "quality"
+        ],
+        "payload_schema_version": 2,
+        "printer_ids": [
+          "fixture-md-bambu",
+          "fixture-md-ff"
+        ],
+        "printer_tokens": {
+          "fixture-md-bambu": "FIXTURE_MD_BAMBU_CODE",
+          "fixture-md-ff": "FIXTURE_MD_FF_CHECK"
+        },
+        "quality_data_class": "no_persistent_user_data"
+      },
+      "file": "moduledata_v2.3diwell-backup",
+      "passphrase": null,
+      "protection_mode": "none",
+      "requires_password": false,
+      "sha256": "b1d09e8e8a8d9beecc1fabb41549fb330a3b55a9396db71d69ebff58b1edc43b"
+    }
+  ],
+  "note": "FROZEN module-data fixture (payload v2) — NEVER regenerate or modify."
+}

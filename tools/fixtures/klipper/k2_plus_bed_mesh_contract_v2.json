@@ -1,0 +1,146 @@
+{
+ "_readme": [
+  "Alpha 2.840 — ПОЛНОСТЬЮ СИНТЕТИЧЕСКАЯ фикстура контракта калибровки стола Klipper.",
+  "Клиентский отчёт использовался ТОЛЬКО на чтение: сюда перенесена ФОРМА контракта",
+  "(структурные факты), а не данные клиента. Здесь нет отметок времени, реальных версий,",
+  "тел клиентских макросов, идентификаторов, имён файлов и полного списка объектов.",
+  "",
+  "ГЛАВНЫЙ УРОК, который фикстура кодирует: прямого разбора START_PRINT НЕДОСТАТОЧНО.",
+  "Он вызывает vendor-макросы, и пока их тела не прочитаны, судьба сетки НЕИЗВЕСТНА —",
+  "а неизвестность обязана ЗАКРЫВАТЬ автоматический путь, а не открывать его."
+ ],
+ "fixture_version": 2,
+ "alpha": "2.840",
+ "printer_class": {
+  "adapter": "klipper",
+  "model_class": "synthetic_k2_like",
+  "objects": ["webhooks", "configfile", "print_stats", "virtual_sdcard", "toolhead",
+              "bed_mesh", "gcode_move", "idle_timeout"],
+  "builtins": ["G28", "G1", "G21", "G90", "G92", "M104", "M106", "M109", "M140", "M190",
+               "M204", "M220", "SET_VELOCITY_LIMIT", "SET_GCODE_OFFSET", "SET_PIN",
+               "BED_MESH_CALIBRATE", "BED_MESH_PROFILE", "BED_MESH_CLEAR", "Z_TILT_ADJUST",
+               "SAVE_CONFIG", "RESTART", "M117"],
+  "safe_state": {"print_stats": "standby", "webhooks": "ready", "idle_timeout": "Ready",
+                 "homed_axes": "", "bed_mesh_profile": "default"}
+ },
+ "graphs": {
+  "safe_standard": {
+   "describe": "Стартовый макрос паркует оси и зовёт vendor-макросы, но сетку не трогает.",
+   "start_macro": "START_PRINT",
+   "macros": {
+    "START_PRINT": "{% if params.BED_TEMP %}\nG28\nBOX_START_PRINT\nPRINT_PREPARE_CLEAR\nBOX_NOZZLE_CLEAN\nM190 S{params.BED_TEMP}\nM109 S{params.EXTRUDER_TEMP}\n{% endif %}\n",
+    "BOX_START_PRINT": "SET_VELOCITY_LIMIT ACCEL=5000\nM204 S5000\n",
+    "PRINT_PREPARE_CLEAR": "SET_PIN PIN=synthetic VALUE=0\n",
+    "BOX_NOZZLE_CLEAN": "G1 X0 Y0 F3000\n"
+   },
+   "expected": {"risk": "none", "mode": "standard_builtin",
+                "reason_code": "standard_builtin_proven",
+                "commands": ["BED_MESH_CALIBRATE"], "requires_homing": true}
+  },
+  "unknown_vendor_body": {
+   "describe": "Ровно случай из клиентского отчёта: тела vendor-макросов недоступны.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\nPRINT_PREPARE_CLEAR\n"},
+   "expected": {
+     "risk": "unknown",
+     "mode": "standard_builtin",
+     "reason_code": "start_macro_unproven_self_calibrate",
+     "commands": [
+      "BED_MESH_CALIBRATE"
+     ]
+    }
+  },
+  "clears_mesh": {
+   "describe": "Vendor-макрос очищает сетку ПОСЛЕ нашей калибровки — измерять заранее бессмысленно.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nPRINT_PREPARE_CLEAR\n",
+              "PRINT_PREPARE_CLEAR": "BED_MESH_CLEAR\n"},
+   "expected": {"risk": "clears", "mode": "unsafe",
+                "reason_code": "post_start_mesh_risk_clears", "commands": []}
+  },
+  "replaces_mesh": {
+   "describe": "Стартовый макрос загружает СВОЙ профиль — наша сетка будет заменена.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\n",
+              "BOX_START_PRINT": "BED_MESH_PROFILE LOAD=default\n"},
+   "expected": {"risk": "replaces", "mode": "unsafe",
+                "reason_code": "post_start_mesh_risk_replaces", "commands": []}
+  },
+  "recalibrates": {
+   "describe": "Стартовый макрос калибрует сам — наша калибровка была бы второй.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\n",
+              "BOX_START_PRINT": "BED_MESH_CALIBRATE\n"},
+   "expected": {"risk": "recalibrates", "mode": "file_controlled",
+                "reason_code": "start_macro_recalibrates", "commands": []}
+  },
+  "safe_vendor": {
+   "describe": "Доказанный vendor-макрос: полное тело, реальный путь к встроенной калибровке, сам паркует.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\n",
+              "BOX_START_PRINT": "SET_VELOCITY_LIMIT ACCEL=5000\n",
+              "PRINT_CALIBRATION": "G28\nBED_MESH_CALIBRATE\n"},
+   "expected": {"risk": "none", "mode": "vendor_macro", "reason_code": "vendor_proven",
+                "commands": ["PRINT_CALIBRATION"], "requires_homing": false}
+  },
+  "unsafe_vendor_save_config": {
+   "describe": "Vendor-макрос пишет конфигурацию — доказанным считать нельзя, уходим на стандартный путь.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\n",
+              "BOX_START_PRINT": "SET_VELOCITY_LIMIT ACCEL=5000\n",
+              "PRINT_CALIBRATION": "BED_MESH_CALIBRATE\nSAVE_CONFIG\n"},
+   "expected": {"risk": "none", "mode": "standard_builtin",
+                "reason_code": "standard_builtin_proven", "commands": ["BED_MESH_CALIBRATE"]}
+  },
+  "vendor_graph_incomplete": {
+   "describe": "У vendor-макроса есть непрочитанный вызов: доказанным он не считается.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\n",
+              "BOX_START_PRINT": "SET_VELOCITY_LIMIT ACCEL=5000\n",
+              "PRINT_CALIBRATION": "BED_MESH_CALIBRATE\nBOX_SECRET_STEP\n"},
+   "expected": {"risk": "none", "mode": "standard_builtin",
+                "reason_code": "standard_builtin_proven", "commands": ["BED_MESH_CALIBRATE"]}
+  },
+  "vendor_name_only": {
+   "describe": "Имя есть, а калибровки в теле нет: имя доказательством не является.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\nBOX_START_PRINT\n",
+              "BOX_START_PRINT": "SET_VELOCITY_LIMIT ACCEL=5000\n",
+              "PRINT_CALIBRATION": "M117 calibrating\n"},
+   "expected": {"risk": "none", "mode": "standard_builtin",
+                "reason_code": "standard_builtin_proven", "commands": ["BED_MESH_CALIBRATE"]}
+  },
+  "overridden_bed_mesh": {
+   "describe": "Имя встроенной команды перекрыто макросом — что она делает, доказать нельзя.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\n", "BED_MESH_CALIBRATE": "M117 fake\n"},
+   "expected": {"risk": "none", "mode": "unsafe", "reason_code": "bed_mesh_overridden",
+                "commands": []}
+  },
+  "overridden_homing": {
+   "describe": "Парковка перекрыта макросом — автоматический путь закрыт.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "G28\n", "G28": "M117 fake home\n"},
+   "expected": {"risk": "none", "mode": "unsafe", "reason_code": "homing_overridden",
+                "commands": []}
+  },
+  "cyclic": {
+   "describe": "Взаимная рекурсия макросов: обход обязан остановиться и не зациклиться.",
+   "start_macro": "START_PRINT",
+   "macros": {"START_PRINT": "A_MACRO\n", "A_MACRO": "B_MACRO\n", "B_MACRO": "A_MACRO\n"},
+   "expected": {"cycle_detected": true, "risk": "none", "mode": "standard_builtin"}
+  }
+ },
+ "execution_contract": {
+  "order": ["revalidate_state", "resolve_plan", "home_if_needed", "calibrate_once",
+            "verify_result", "upload", "start"],
+  "max_home_commands": 1,
+  "max_calibration_commands": 1,
+  "auto_retry": false,
+  "completion_evidence": ["gcode_script_response", "webhooks_ready", "print_stats_standby",
+                          "idle_timeout_ready", "bed_mesh_present", "bed_mesh_fingerprint_changed"],
+  "states": ["planned", "homing", "calibrating", "verifying", "completed", "failed",
+             "uncertain", "file_controlled"]
+ },
+ "graph_limits": {"max_depth": 6, "max_nodes": 120, "max_body_chars": 24000}
+}

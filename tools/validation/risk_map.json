@@ -1,0 +1,1127 @@
+{
+ "schema_version": "3diwell-risk-map-v1",
+ "description": "Единый источник правды: изменённый путь -> область -> риск R0..R4 -> минимальный профиль проверки. Правила упорядочены, но НЕ действует принцип 'первое совпадение победило': совпавшие правила объединяются, берётся МАКСИМАЛЬНЫЙ риск, САМЫЙ СТРОГИЙ профиль и объединение всех обязательных признаков. Занижать риск ради скорости запрещено.",
+ "risk_order": [
+  "R0",
+  "R1",
+  "R2",
+  "R3",
+  "R4"
+ ],
+ "profile_order": [
+  "FAST",
+  "TARGETED",
+  "SUBSYSTEM",
+  "RELEASE",
+  "HARDWARE"
+ ],
+ "profile_min_by_risk": {
+  "R0": "FAST",
+  "R1": "TARGETED",
+  "R2": "SUBSYSTEM",
+  "R3": "RELEASE",
+  "R4": "RELEASE"
+ },
+ "fallback": {
+  "unknown_product_file": {
+   "component": "unknown",
+   "risk": "R3",
+   "profile": "RELEASE",
+   "blocked": false,
+   "reason": "unknown product path — путь не описан в карте; занижать до FAST нельзя, эскалация до RELEASE",
+   "warning": "Файл не совпал ни с одним правилом. Добавьте правило в tools/validation/risk_map.json."
+  },
+  "unknown_in_critical_area": {
+   "component": "unknown-critical",
+   "risk": "R4",
+   "profile": "RELEASE",
+   "blocked": true,
+   "reason": "unknown path inside critical area — неизвестный файл внутри критической области; автоматический выбор профиля запрещён",
+   "warning": "Неизвестный путь в критической области. Требуется явное решение владельца и запись правила в карту."
+  },
+  "critical_area_globs": [
+   "app/print*",
+   "app/project_orchestrator.py",
+   "app/printer_files/**",
+   "app/config_backup/**",
+   "app/klipper_*",
+   "app/printer_command_policy.py",
+   "app/printer_job_lifecycle.py",
+   "app/*migration*",
+   "app/*recovery*"
+  ]
+ },
+ "rules": [
+  {
+   "id": "documentation",
+   "component": "documentation",
+   "globs": [
+    "*.md",
+    "docs/**",
+    ".ai/*.md",
+    ".ai/*.jsonl",
+    ".ai/archive/**",
+    "LICENSE",
+    "*.txt"
+   ],
+   "exclude_globs": [
+    "desktop_shell_version_*.txt",
+    "requirements.txt",
+    "requirements-*.txt"
+   ],
+   "risk": "R0",
+   "profile": "FAST",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Документация и журналы не влияют на исполняемое поведение программы."
+  },
+  {
+   "id": "repo-contract-docs",
+   "component": "documentation",
+   "globs": [
+    "AGENTS.md",
+    "docs/REPOSITORY_LAYOUT.md",
+    ".gitignore"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Эти файлы читаются тестом гигиены репозитория: его проверки 8, 10, 11 и 12 требуют конкретных фрагментов."
+  },
+  {
+   "id": "ui-fonts",
+   "component": "frontend-style",
+   "globs": [
+    "web/design/fonts/**",
+    "web/design/fonts.css",
+    "tools/build_ui_fonts.py",
+    "tools/test_ui_fonts.py",
+    "tools/test_ui_text_size.py",
+    "tools/test_header_tongue.py"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_ui_fonts.py",
+    "tools/test_printer_cell_buttons.py",
+    "tools/test_ui_text_size.py",
+    "tools/test_header_tongue.py"
+   ],
+   "subsystem_tests": [],
+   "reason": "Шрифты интерфейса (по умолчанию 3DIWELL Wide J, на выбор Wide P): обязаны занимать место, под которое выверен интерфейс (иначе подписи вылезают за кнопки и за язычок шапки), и сохранять уведомления лицензии OFL.",
+   "exclude_globs": []
+  },
+  {
+   "id": "frontend-style",
+   "component": "frontend-style",
+   "globs": [
+    "web/app.css",
+    "web/design/palette.css",
+    "web/vendor/tailwind.css",
+    "**/*.css"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_settings_layout_system.py",
+    "tools/test_topbar_stays_fixed.py",
+    "tools/test_printer_cell_buttons.py",
+    "tools/test_header_tongue.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_header_tongue.py"
+   ],
+   "reason": "Визуальная разметка. app.css хрупкий (base64-блоб и битый UTF-8 хвост), правится только через surrogateescape.",
+   "exclude_globs": [
+    "web/ui3/**"
+   ]
+  },
+  {
+   "id": "frontend-template",
+   "component": "frontend-template",
+   "globs": [
+    "web/index.html",
+    "web/components/**",
+    "web/tour/**",
+    "web/design/icons.js"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_app_frame_surfaces.py",
+    "tools/test_printer_cell_buttons.py",
+    "tools/test_task_sending_status.py",
+    "tools/test_bambu_ext_side_ui.py",
+    "tools/test_auth_commands_ui_1016.py",
+    "tools/test_help_hints_coverage.py",
+    "tools/test_printer_panel_plate_clear_ui3.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_app_frame_surfaces.py",
+    "tools/test_app_shell_and_settings_header.py",
+    "tools/test_frontend_boot_and_printer_sort.py",
+    "tools/test_printer_cell_buttons.py",
+    "tools/test_task_sending_status.py",
+    "tools/test_ui_text_size.py",
+    "tools/test_header_tongue.py",
+    "tools/test_interface_mode_access_always.py"
+   ],
+   "reason": "Шаблон SPA: runtime-компилятор Vue молча не рендерит битый шаблон — нужна компиляция и реальный boot."
+  },
+  {
+   "id": "frontend-logic",
+   "component": "frontend-logic",
+   "globs": [
+    "web/app.js",
+    "web/composables/**",
+    "web/*.js"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_frontend_boot_and_printer_sort.py",
+    "tools/test_task_sending_status.py",
+    "tools/test_printer_messages_all_brands.py",
+    "tools/test_upload_print_stock_decision.py",
+    "tools/test_ui_fixes_1013.py",
+    "tools/test_audit_recheck_1016.py",
+    "tools/test_bambu_ext_side_ui.py",
+    "tools/test_auth_commands_ui_1016.py",
+    "tools/test_printer_form_reset.mjs",
+    "tools/test_help_hints_coverage.py",
+    "tools/test_printer_panel_plate_clear_ui3.py",
+    "tools/test_license_relay_status_ui.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_frontend_boot_and_printer_sort.py",
+    "tools/test_app_frame_surfaces.py",
+    "tools/test_app_shell_and_settings_header.py",
+    "tools/test_task_sending_status.py",
+    "tools/test_printer_messages_all_brands.py",
+    "tools/test_ui_fonts.py",
+    "tools/test_ui_text_size.py",
+    "tools/test_header_tongue.py",
+    "tools/test_interface_mode_access_always.py",
+    "tools/test_ui_fixes_1013.py"
+   ],
+   "reason": "Логика SPA. Обязаны пережить правки подстановки ref('{{ VERSION }}') и CHANGELOG_B64.",
+   "exclude_globs": [
+    "web/ui3/**"
+   ]
+  },
+  {
+   "id": "frontend-ui3",
+   "component": "frontend-ui3",
+   "globs": [
+    "web/ui3/**"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_ui3_overlay.py",
+    "tools/test_printer_panel_scroll_ui3.py",
+    "tools/test_printer_panel_ui3.py",
+    "tools/test_inventory_ui3_look.py",
+    "tools/test_inventory_window_fits.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_ui3_overlay.py",
+    "tools/test_printer_panel_scroll_ui3.py",
+    "tools/test_inventory_ui3_look.py",
+    "tools/test_inventory_window_fits.py",
+    "tools/test_reports_screen.py"
+   ],
+   "reason": "Второй интерфейс (UI 3.0) с 2.911 — НАДСТРОЙКА над рабочим: /ui3 отдаёт тот же index.html с флагом и листом web/ui3/ui3.css (окна «Принтеры/Проекты/Задачи»). Набор test_ui3_overlay проверяет обе страницы: окна на /ui3 и неизменность «/». Риск R2, профиль SUBSYSTEM — минимум для своего риска."
+  },
+  {
+   "id": "backend-api",
+   "component": "backend-api",
+   "globs": [
+    "app/route_access_control.py",
+    "app/route_matching.py",
+    "app/route_policy_registry.py",
+    "app/auth_rate_limit.py",
+    "app/lan_access_policy.py",
+    "app/module_catalog.py",
+    "app/module_runtime_policy.py",
+    "app/session_cookie_policy.py",
+    "app/websocket_access_control.py",
+    "app/host_header_policy.py",
+    "app/security_policy.py"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_route_policy_registry.py",
+    "tools/test_module_version_tolerance.py",
+    "tools/test_remembered_devices.py",
+    "tools/test_host_header_guard.py",
+    "tools/test_stop_and_refusal_e2e.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_route_policy_registry.py",
+    "tools/test_core_route_permissions.py",
+    "tools/test_module_route_permissions.py",
+    "tools/test_auth_session_hardening.py",
+    "tools/test_module_version_tolerance.py",
+    "tools/test_remembered_devices.py",
+    "tools/test_websocket_session_lifecycle.py",
+    "tools/test_local_admin_recovery.py",
+    "tools/test_lan_auth_prerequisites.py",
+    "tools/test_module_core_contract.py",
+    "tools/test_module_management_settings.py",
+    "tools/test_module_route_side_effect_metadata.py",
+    "tools/test_licensing_foundation.py",
+    "tools/test_licensing_process.py",
+    "tools/test_host_header_guard.py",
+    "tools/test_browser_origin_policy.py",
+    "tools/test_locked_out_admin_setup.py"
+   ],
+   "reason": "Маршруты и права доступа: ошибка открывает или закрывает функциональность целиком."
+  },
+  {
+   "id": "backend-runtime",
+   "component": "backend-runtime",
+   "globs": [
+    "server.py",
+    "app/restart_supervisor.py",
+    "app/restart_cli.py",
+    "app/runtime_log_buffer.py",
+    "app/diagnostics.py",
+    "app/data_dir_items.py",
+    "app/lan_address.py"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_queue_launch_verdict.py",
+    "tools/test_queue_wait.py",
+    "tools/test_farm_marks.py",
+    "tools/test_staging_count.py",
+    "tools/test_remembered_devices.py",
+    "tools/test_module_version_tolerance.py",
+    "tools/test_audit_tail_r102.py",
+    "tools/test_data_dir_move.py",
+    "tools/test_update_check_manifest.py",
+    "tools/test_host_header_guard.py",
+    "tools/test_upload_print_stock_decision.py",
+    "tools/test_locked_out_admin_setup.py",
+    "tools/test_print_accounting_fixes_1013.py",
+    "tools/test_audit_recheck_1016.py",
+    "tools/test_data_safety_r151.py",
+    "tools/test_stop_and_refusal_e2e.py",
+    "tools/test_auth_commands_ui_1016.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_licensing_foundation.py",
+    "tools/test_licensing_process.py",
+    "tools/test_data_dir_move_e2e.py",
+    "tools/test_e2e_update_check_suppression.py",
+    "tools/test_single_instance_guard.py",
+    "tools/test_application_restart_supervisor.py",
+    "tools/test_print_accounting_fixes_1013.py"
+   ],
+   "reason": "Серверный runtime: один процесс обслуживает печать, очередь и данные; локальной проверки недостаточно."
+  },
+  {
+   "id": "shared-core",
+   "component": "shared-core",
+   "globs": [
+    "app/__init__.py",
+    "app/utils.py",
+    "app/printer_dto.py",
+    "app/model_compat.py"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Общий код: изменение расходится по всем подсистемам, узкий профиль недостаточен."
+  },
+  {
+   "id": "inventory",
+   "component": "inventory",
+   "globs": [
+    "modules/inventory/**"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_inventory_backup_provider.py",
+    "tools/test_inventory_preflight_tiers.py",
+    "tools/test_inventory_return_unknown_state.py",
+    "tools/test_inventory_external_feed_deduction.py",
+    "tools/test_inventory_window_fits.py",
+    "tools/test_upload_print_stock_decision.py",
+    "tools/test_bambu_plate_weights.py",
+    "tools/test_inventory_i18n_reasons.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_inventory_backup_provider.py",
+    "tools/test_inventory_autodeduct_safety.py",
+    "tools/test_inventory_cold_load.py",
+    "tools/test_inventory_return_unknown_state.py",
+    "tools/test_inventory_external_feed_deduction.py",
+    "tools/test_inventory_return_unknown_state_process.py",
+    "tools/test_inventory_window_fits.py"
+   ],
+   "reason": "Модуль склада: пользовательские данные, но печать без него работает. Требуется пересборка zip и переустановка на ферме."
+  },
+  {
+   "id": "quality",
+   "component": "quality",
+   "globs": [
+    "modules/quality/**",
+    "app/print_run_events.py"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_quality_module.py",
+    "tools/test_bambu_plate_weights.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_quality_module.py",
+    "tools/test_quality_backup_provider.py"
+   ],
+   "reason": "Аналитика качества: advisory-модуль, ошибка не влияет на печать (хуки fail-open)."
+  },
+  {
+   "id": "cost",
+   "component": "cost",
+   "globs": [
+    "modules/cost/**"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_cost_module.py",
+    "tools/test_cost_backup_provider.py",
+    "tools/test_data_safety_r151.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_cost_module.py",
+    "tools/test_cost_backup_provider.py",
+    "tools/test_data_dir_move_e2e.py"
+   ],
+   "reason": "Расчёт заказа (с 3.0 на месте «Себестоимости»): хранит заказы и копии файлов, обращается к самой программе на 127.0.0.1 и создаёт проекты; на печать не влияет."
+  },
+  {
+   "id": "messengers",
+   "component": "messengers",
+   "globs": [
+    "modules/messengers/**"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_messengers_module.py",
+    "tools/test_data_safety_r151.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_messengers_module.py",
+    "tools/test_module_core_contract.py",
+    "tools/test_module_version_tolerance.py"
+   ],
+   "reason": "Модуль уведомлений в мессенджеры: события принтеров, ключи ботов не в журнал и не в копию."
+  },
+  {
+   "id": "appearance",
+   "component": "appearance",
+   "globs": [
+    "modules/appearance/**",
+    "tools/build_appearance_zip.py"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_appearance_module.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_appearance_module.py"
+   ],
+   "reason": "Оформление и темы: модуль только интерфейса, меняет вид всей программы; печать и данные не трогает."
+  },
+  {
+   "id": "camera-wall",
+   "component": "camera-wall",
+   "globs": [
+    "modules/camera_wall/**",
+    "tools/build_camera_wall_zip.py"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_module_backup_contract.py",
+    "tools/test_camera_wall_server_sources.py",
+    "tools/test_camera_wall_broker_reauth.mjs"
+   ],
+   "subsystem_tests": [
+    "tools/test_module_backup_contract.py",
+    "tools/test_module_version_tolerance.py"
+   ],
+   "reason": "Модуль «Видеостена»: пользовательских данных в программе нет (камеры в браузере) — это объявлено провайдером копии; новый модуль без классификации краснит test_module_backup_contract."
+  },
+  {
+   "id": "files-3mf",
+   "component": "files-3mf",
+   "globs": [
+    "app/import_worker.py",
+    "app/part_contours.py",
+    "app/part_counter.py",
+    "app/filesystem_access_policy.py"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_filesystem_path_boundary.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_filesystem_path_boundary.py",
+    "tools/test_managed_project_task_files.py",
+    "tools/test_flashforge_3mf_extract.py"
+   ],
+   "reason": "Разбор моделей и границы файловой системы."
+  },
+  {
+   "id": "network-discovery",
+   "component": "network-discovery",
+   "globs": [
+    "app/printer_health_policy.py",
+    "app/printer_state_policy.py",
+    "app/printer_discovery.py",
+    "app/printer_address.py"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_network_access_settings.py",
+    "tools/test_printer_discovery.py",
+    "tools/test_printer_discovery_e2e.py",
+    "tools/test_printer_address.py",
+    "tools/test_printer_discovery_panel.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_network_access_settings.py",
+    "tools/test_printer_discovery.py",
+    "tools/test_printer_discovery_e2e.py",
+    "tools/test_print_accounting_fixes_1013.py",
+    "tools/test_printer_address.py",
+    "tools/test_printer_discovery_panel.py"
+   ],
+   "reason": "Сетевой runtime принтеров: ошибка проявляется только на живой ферме, занижать нельзя."
+  },
+  {
+   "id": "bambu",
+   "component": "bambu",
+   "globs": [
+    "**/*bambu*"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_bambu_print_payload.py",
+    "tools/test_printer_messages_all_brands.py",
+    "tools/test_bambu_print_refusal.py",
+    "tools/test_bambu_ams_presence.py",
+    "tools/test_bambu_ext_side_ui.py",
+    "tools/test_bambu_plate_weights.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_bambu_print_payload.py",
+    "tools/test_bambu_error_code_canonical.py",
+    "tools/test_bambu_hms_cancel_realpath.py",
+    "tools/test_bambu_studio_sniff.py",
+    "tools/test_printer_messages_all_brands.py",
+    "tools/test_bambu_print_refusal.py"
+   ],
+   "reason": "Адаптер принтера: протокол проверен на железе (FTPS без unwrap), регрессия видна только в реальной печати."
+  },
+  {
+   "id": "camera",
+   "component": "camera",
+   "globs": [
+    "app/camera_*.py",
+    "app/mjpeg_split.py"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_camera_single_owner.py",
+    "tools/test_camera_fmp4.py",
+    "tools/test_camera_viewer_close.py",
+    "tools/test_flashforge_pause_camera.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_camera_single_owner.py",
+    "tools/test_camera_fmp4.py",
+    "tools/test_camera_diagnostics.py",
+    "tools/test_camera_viewer_close.py",
+    "tools/test_flashforge_pause_camera.py",
+    "tools/test_camera_wall_governor.py"
+   ],
+   "reason": "Камеры принтеров: один владелец потока на принтер (Bambu держит одну-две сессии), раздача зрителям, закрытие потока при уходе зрителя, код доступа не в журнале. Работает в процессе сервера."
+  },
+  {
+   "id": "flashforge",
+   "component": "flashforge",
+   "globs": [
+    "**/*flashforge*"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_flashforge_http_serial.py",
+    "tools/test_flashforge_detail_capture.py",
+    "tools/test_flashforge_pause_camera.py",
+    "tools/test_printer_messages_all_brands.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_flashforge_http_serial.py",
+    "tools/test_flashforge_3mf_extract.py",
+    "tools/test_flashforge_detail_capture.py",
+    "tools/test_flashforge_pause_camera.py",
+    "tools/test_printer_messages_all_brands.py"
+   ],
+   "reason": "Адаптер принтера: метаданные в HTTP-заголовках, Expect: 100-continue — проверено на железе."
+  },
+  {
+   "id": "klipper",
+   "component": "klipper",
+   "globs": [
+    "app/klipper_*.py",
+    "**/*klipper*",
+    "**/*moonraker*",
+    "**/*k2_plus*",
+    "app/creality_native.py",
+    "app/creality_video.py",
+    "app/gcode_tool_slot.py"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": true,
+   "targeted_tests": [
+    "tools/test_klipper_repeated_bed_mesh.py",
+    "tools/test_printer_messages_all_brands.py",
+    "tools/test_creality_native.py",
+    "tools/test_creality_video.py",
+    "tools/test_camera_diagnostics.py",
+    "tools/test_gcode_tool_slot_perf.py",
+    "tools/test_cfs_print_slot.py",
+    "tools/test_pre_print_slot_plan.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_klipper_repeated_bed_mesh.py",
+    "tools/test_klipper_bed_mesh_execution.py",
+    "tools/test_klipper_prestart_capabilities.py",
+    "tools/test_klipper_start_confirmation.py",
+    "tools/test_klipper_contract_report.py",
+    "tools/test_k2_plus_real_contract.py",
+    "tools/test_k2_plus_bed_mesh_prestart.py",
+    "tools/test_printer_messages_all_brands.py"
+   ],
+   "reason": "Предстартовая подготовка и запуск на K2 Plus: контракт снимается с живого принтера, дефект 2.841 проявился только на железе."
+  },
+  {
+   "id": "queue",
+   "component": "queue",
+   "globs": [
+    "**/*queue*",
+    "app/printer_job_lifecycle.py"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*",
+    "tools/orchestrator/**",
+    "tools/test_orchestrator_*.py"
+   ],
+   "risk": "R4",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_queue_reservation_release.py",
+    "tools/test_queue_launch_verdict.py",
+    "tools/test_inventory_preflight_tiers.py",
+    "tools/test_queue_wait.py",
+    "tools/test_queue_auto_start.py",
+    "tools/test_printer_panel_plate_clear_ui3.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_queue_reservation_release.py",
+    "tools/test_project_job_correlation.py",
+    "tools/test_queue_wait.py",
+    "tools/test_queue_auto_start.py"
+   ],
+   "reason": "Очередь печати: ошибка срывает производство, освобождение резерва критично. С 2.920 сюда же входит очередь ОЖИДАНИЯ (подбор принтера по материалу, свободе и разрешению владельца): test_queue_wait проверяет исполнением, что негодный принтер не выбирается.",
+   "exclude_note": "Правило про ОЧЕРЕДЬ ПЕЧАТИ. Локальная очередь задач в tools/orchestrator к печати отношения не имеет и попадала сюда только по совпадению слова queue в имени файла."
+  },
+  {
+   "id": "print-dispatch",
+   "component": "print-dispatch",
+   "globs": [
+    "app/project_orchestrator.py",
+    "app/printer_command_policy.py",
+    "app/printer_files/**",
+    "**/*dispatch*",
+    "**/*print_start*",
+    "**/*printstart*"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*"
+   ],
+   "risk": "R4",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": true,
+   "targeted_tests": [
+    "tools/test_printer_command_policy.py",
+    "tools/test_bambu_print_refusal.py",
+    "tools/test_pre_print_slot_plan.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_printer_command_policy.py",
+    "tools/test_printer_file_print_actions.py",
+    "tools/test_external_reprint_sync.py",
+    "tools/test_project_orchestrator_no_dispatch.py",
+    "tools/test_bambu_print_refusal.py",
+    "tools/test_pre_print_slot_plan.py"
+   ],
+   "reason": "Отправка на принтер и предохранители DISPATCH/TRANSPORT: цена ошибки — сорванная печать и испорченный материал. Требуется подтверждение на реальном принтере."
+  },
+  {
+   "id": "recovery-backup",
+   "component": "recovery-backup",
+   "globs": [
+    "app/config_backup/**",
+    "**/*recovery*",
+    "**/*backup*",
+    "tools/fixtures/config_backup/**"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*",
+    "docs/**/*.md"
+   ],
+   "exclude_note": "Правило про КОД резервного копирования и восстановления. Исключение точечное: ТОЛЬКО markdown внутри docs/. Документ docs/orchestrator/worker-recovery.md — текст о восстановлении сессии исполнителя, к резервным копиям владельца отношения не имеет и попадал сюда по совпадению слова recovery в имени. Python, JS, SQL, установщик и конфигурация рантайма исключением НЕ покрыты даже внутри docs/. Продуктовые пути app/config_backup/**, app/*recovery*, *backup* и *recovery* в коде остаются R4/RELEASE.",
+   "risk": "R4",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_config_backup_contract.py",
+    "tools/test_config_backup_security_hold.py",
+    "tools/test_config_backup_module_guards.py",
+    "tools/test_data_safety_r151.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_config_backup_contract.py",
+    "tools/test_config_backup_compatibility_forever.py",
+    "tools/test_config_backup_self_restore.py",
+    "tools/test_config_backup_validation_errors.py",
+    "tools/test_config_backup_alpha_2829_compat.py",
+    "tools/test_module_backup_contract.py",
+    "tools/test_cost_backup_provider.py",
+    "tools/test_inventory_backup_provider.py",
+    "tools/test_config_backup_multistore_atomicity.py",
+    "tools/test_config_backup_module_data.py",
+    "tools/test_config_backup_all_modules_e2e.py"
+   ],
+   "reason": "Формат резервной копии — постоянный публичный контракт; замороженные фикстуры неприкосновенны, ошибка означает потерю пользовательских данных."
+  },
+  {
+   "id": "database-migrations",
+   "component": "database-migrations",
+   "globs": [
+    "**/*migration*",
+    "**/migrations/**",
+    "app/config_backup/settings_registry.py"
+   ],
+   "exclude_globs": [
+    "tools/test_*",
+    "tools/_*",
+    "tools/orchestrator/migrations/**"
+   ],
+   "risk": "R4",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_config_backup_contract.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_config_backup_contract.py",
+    "tools/test_config_backup_compatibility_forever.py"
+   ],
+   "reason": "Миграции необратимы для пользовательских данных; опубликованную миграцию переписывать нельзя.",
+   "exclude_note": "Правило про ПОЛЬЗОВАТЕЛЬСКИЕ данные. Миграции локальной очереди задач в tools/orchestrator/migrations не касаются ни базы фермы, ни резервных копий и попали сюда только по совпадению слова migrations в пути. Продуктовые пути app/**, modules/** и все остальные остаются R4/RELEASE."
+  },
+  {
+   "id": "build-installer",
+   "component": "build-installer",
+   "globs": [
+    "*.spec",
+    "*.iss",
+    "build.bat",
+    "requirements.txt",
+    "desktop_shell_version_*.txt",
+    "*.pyw",
+    "tools/build_*_zip.py",
+    "tools/build_release.py",
+    "requirements-*.txt",
+    "tools/build_version_info.py",
+    "tools/installer/sandbox/**"
+   ],
+   "risk": "R3",
+   "profile": "RELEASE",
+   "ui_required": false,
+   "build_required": true,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_license_files.py",
+    "tools/test_collect_third_party_licenses.py",
+    "tools/test_dependency_pins.py",
+    "tools/test_release_readme.py",
+    "tools/test_build_version_info.py",
+    "tools/test_install_sandbox_guard.py"
+   ],
+   "subsystem_tests": [],
+   "reason": "Сборка и установщик: ошибка обнаруживается только в собранном EXE, нужен packaged proof."
+  },
+  {
+   "id": "owner-sync-tools",
+   "component": "owner-sync-tools",
+   "globs": [
+    "tools/sync/**"
+   ],
+   "exclude_globs": [],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Кнопки обмена владельца (GitHub) и копия на Google Диске: в продукт не входят, проверяются запуском."
+  },
+  {
+   "id": "validation-tools",
+   "component": "validation-tools",
+   "globs": [
+    "tools/validation/**",
+    "tools/test_select_profile.py",
+    "tools/test_run_profile.py",
+    "tools/test_ui_verification.py",
+    "tools/test_isolated_ui_verification.py"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_select_profile.py",
+    "tools/test_run_profile.py",
+    "tools/test_ui_verification.py",
+    "tools/test_isolated_ui_verification.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_select_profile.py",
+    "tools/test_run_profile.py",
+    "tools/test_ui_verification.py",
+    "tools/test_isolated_ui_verification.py"
+   ],
+   "reason": "Служебный инструмент выбора профиля: в продукт не входит, в EXE не попадает, сборки не требует."
+  },
+  {
+   "id": "licensing",
+   "component": "licensing",
+   "globs": [
+    "app/licensing/**",
+    "tools/module_package.py",
+    "tools/fm_license_tool.py",
+    "examples/modules/**",
+    "app/update_manifest.py",
+    "tools/licensing_test/**"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_licensing_foundation.py",
+    "tools/test_update_check_manifest.py",
+    "tools/test_licensing_stand043.py",
+    "tools/test_licensing_module_summary.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_licensing_foundation.py",
+    "tools/test_licensing_process.py",
+    "tools/test_module_version_tolerance.py",
+    "tools/test_module_management_settings.py",
+    "tools/test_licensing_stand043.py",
+    "tools/test_license_relay_status_ui.py",
+    "tools/test_licensing_module_summary.py"
+   ],
+   "reason": "26.09.2026: подписанные пакеты модулей и лицензии — проверка до запуска кода модуля, право на обновления, граница платной функции. Ошибка здесь либо не пускает бесплатный модуль, либо открывает платное без лицензии."
+  },
+  {
+   "id": "third-party-licenses",
+   "component": "public-export",
+   "globs": [
+    "packaging/installer/licenses/**",
+    "packaging/installer/license-page-*.txt",
+    "THIRD_PARTY_NOTICES.md",
+    "tools/test_license_files.py"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_license_files.py",
+    "tools/test_collect_third_party_licenses.py"
+   ],
+   "subsystem_tests": [],
+   "reason": "Тексты лицензий сторонних компонентов, вшитых в программу (FFmpeg — GPL, изображения принтеров — AGPL, шрифты — OFL), обязаны ставиться вместе с ней; примечания сверяются с настоящим ffmpeg.exe и числом изображений.",
+   "exclude_globs": []
+  },
+  {
+   "id": "public-export",
+   "component": "public-export",
+   "globs": [
+    "packaging/**",
+    "tools/public_export.py",
+    "tools/collect_third_party_licenses.py"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_history_baseline.py",
+    "tools/test_collect_third_party_licenses.py",
+    "tools/test_license_files.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_history_baseline.py"
+   ],
+   "reason": "26.09.2026: состав открытого репозитория и его выгрузка с проверкой на секреты. Ошибка — в открытую копию уходит закрытое или личное."
+  },
+  {
+   "id": "test-harness",
+   "component": "validation-tools",
+   "globs": [
+    "tools/test_*.py",
+    "tools/test_*.mjs",
+    "tools/_*.py",
+    "tools/release_gate.py",
+    "tools/repository_audit.py",
+    "tools/audit_flicker.py",
+    "tools/printer_net_capture.py"
+   ],
+   "exclude_globs": [
+    "tools/test_select_profile.py"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "self_test": true,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Тестовая оснастка: продукт она не меняет, но сам изменённый набор нужно прогнать — self_test добавляет изменённый файл в план как тест. Правка mutation proof дополнительно требует tools/test_mutation_proof_exit_contract.py."
+  },
+  {
+   "id": "mutation-proof-harness",
+   "component": "validation-tools",
+   "globs": [
+    "tools/test_*mutation_proof*.py",
+    "tools/_mutation_*.py",
+    "tools/_gate_parse.py"
+   ],
+   "risk": "R2",
+   "profile": "SUBSYSTEM",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "self_test": true,
+   "targeted_tests": [
+    "tools/test_mutation_proof_exit_contract.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_mutation_proof_exit_contract.py",
+    "tools/test_release_gate_contract.py"
+   ],
+   "reason": "Оснастка доказательности: её вакуумность делает зелёным весь релизный гейт, поэтому нужен сторож контракта."
+  },
+  {
+   "id": "claude-config",
+   "component": "documentation",
+   "globs": [
+    ".claude/**"
+   ],
+   "risk": "R0",
+   "profile": "FAST",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Конфигурация ассистента: в продукт не входит, поведение программы не меняет."
+  },
+  {
+   "id": "incoming-untouched",
+   "component": "documentation",
+   "globs": [
+    "_incoming/**"
+   ],
+   "risk": "R0",
+   "profile": "FAST",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "_incoming/ по контракту репозитория не трогается; появление изменений здесь само по себе повод остановиться."
+  },
+  {
+   "id": "assets",
+   "component": "documentation",
+   "globs": [
+    "printer_covers/**",
+    "web/assets/**",
+    "**/*.png",
+    "**/*.svg",
+    "**/*.ico",
+    "**/*.ttf"
+   ],
+   "exclude_globs": [
+    "_incoming/**",
+    ".ai/archive/**"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": true,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [],
+   "subsystem_tests": [],
+   "reason": "Статические ассеты: видны пользователю; SVG-катушки склада имеют отдельный контракт (11 файлов, заливка #00A0E3)."
+  },
+  {
+   "id": "android-client",
+   "component": "android-client",
+   "globs": [
+    "android/**"
+   ],
+   "risk": "R1",
+   "profile": "TARGETED",
+   "ui_required": false,
+   "build_required": false,
+   "hardware_required": false,
+   "targeted_tests": [
+    "tools/test_android_client_fm_contract.py"
+   ],
+   "subsystem_tests": [
+    "tools/test_android_client_fm_contract.py"
+   ],
+   "reason": "24.10.2026: исходники приложения Android FM Client. В программу фермы и её установщик не входят; собираются Gradle отдельно (android/FM_Android_Client), свои тесты — gradlew testDebugUnitTest. Здесь — договорённость приложения с FM."
+  }
+ ]
+}

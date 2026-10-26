@@ -1,0 +1,56 @@
+# ============================================================
+#  3DIWELL Farm Manager — зависимости сервера (Python)
+# ============================================================
+#  Python 3.14 (на нём собран выпуск Alpha 3.0).
+#
+#  ВЕРСИИ ЗАКРЕПЛЕНЫ (16.10.2026, R-149): ровно состав выпуска Alpha 3.0 — файл
+#  BUILD_ENVIRONMENT.txt в папке выпуска, он же «pip freeze» Python сборки. Записаны все
+#  пакеты, включая те, что подтягиваются сами (зависимости зависимостей): так сборка на
+#  другом компьютере берёт те же версии, а не новые, вышедшие позже.
+#  Сменить версию — осознанно: поправить строку здесь, поставить, собрать и обновить
+#  packaging/installer/licenses/THIRD_PARTY_LICENSES.txt (сборка остановится и подскажет
+#  команду). Проверка файла — tools/test_dependency_pins.py.
+#
+#  УСТАНОВКА (в консоли cmd/PowerShell из папки с этим файлом):
+#      py -3.14 -m pip install -r requirements.txt
+#
+#  Сборка EXE сервера:          requirements-build.txt (этот файл + PyInstaller)
+#  Окно программы и клиент:     requirements-desktop-shell.txt (отдельное окружение buildenv)
+#  Порядок сборки — docs/dev/building.md.
+#
+#  ПРИ СБОРКЕ (PyInstaller) все эти пакеты упаковываются внутрь программы —
+#  конечному пользователю ставить ничего не нужно.
+#  numpy здесь нет намеренно: сборка его исключает (3diwell.spec, excludes).
+# ============================================================
+
+# --- то, что программа использует напрямую ---
+fastapi==0.141.1             # веб-фреймворк: HTTP API + WebSocket
+uvicorn[standard]==0.52.4    # ASGI-сервер запуска (с websockets, httptools, watchfiles и пр.)
+pydantic==2.13.5             # проверка моделей данных (нужна FastAPI)
+python-multipart==0.0.32     # разбор multipart/form-data — загрузка файлов
+paho-mqtt==2.1.0             # MQTT-клиент для принтеров Bambu Lab
+openpyxl==3.1.5              # экспорт и чтение Excel (.xlsx)
+pillow==12.3.0               # превью деталей и миниатюры (импортируется как PIL)
+pystray==0.19.5              # значок программы в трее Windows
+cryptography==50.0.1         # AES-256-GCM + scrypt для резервных копий конфигурации
+
+# --- зависимости зависимостей (тоже закреплены) ---
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.14.2
+cffi==2.1.1
+click==8.5.0
+et_xmlfile==2.0.0
+h11==0.16.0
+httptools==0.8.0
+idna==3.19
+pycparser==3.0
+pydantic_core==2.46.5
+python-dotenv==1.2.3
+PyYAML==6.0.3
+six==1.17.0
+starlette==1.6.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+watchfiles==1.2.0
+websockets==17.1

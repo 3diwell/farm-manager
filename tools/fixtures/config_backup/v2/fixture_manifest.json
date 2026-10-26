@@ -1,0 +1,96 @@
+{
+  "container_format_version": 2,
+  "fixtures": [
+    {
+      "byte_length": 2454,
+      "expected": {
+        "container_format_version": 2,
+        "core_machine_bound": {
+          "archive_dir": "E:\\FrozenV2\\archive",
+          "data_dir": "D:\\FrozenV2\\data",
+          "server_port": 8000,
+          "slicer_path": "C:\\Program Files\\Orca\\orca-slicer.exe"
+        },
+        "core_values": {
+          "lan_access_enabled": true,
+          "modules_disabled": [
+            "quality"
+          ],
+          "net_monitor": true,
+          "printer_files_delete_enabled": true,
+          "printer_files_read_enabled": true,
+          "project_print_enabled": true,
+          "security_enabled": true,
+          "slicer_callback_enabled": true
+        },
+        "payload_schema_version": 1,
+        "printer_adapters": {
+          "fixture-v2-bambu": "bambu",
+          "fixture-v2-ff": "flashforge",
+          "fixture-v2-voron": "klipper"
+        },
+        "printer_ids": [
+          "fixture-v2-bambu",
+          "fixture-v2-ff",
+          "fixture-v2-voron"
+        ],
+        "printer_tokens": {
+          "fixture-v2-bambu": "FIXTURE_V2_BAMBU_ACCESS_CODE",
+          "fixture-v2-ff": "FIXTURE_V2_FF_CHECKCODE",
+          "fixture-v2-voron": "FIXTURE_V2_MOONRAKER_APIKEY"
+        }
+      },
+      "file": "passwordless_v2.3diwell-backup",
+      "passphrase": null,
+      "protection_mode": "none",
+      "requires_password": false,
+      "sha256": "2868302e308c24a258132fe04f24c5ccd549eecabd02593099006fbc2a8ec392"
+    },
+    {
+      "byte_length": 2622,
+      "expected": {
+        "container_format_version": 2,
+        "core_machine_bound": {
+          "archive_dir": "E:\\FrozenV2\\archive",
+          "data_dir": "D:\\FrozenV2\\data",
+          "server_port": 8000,
+          "slicer_path": "C:\\Program Files\\Orca\\orca-slicer.exe"
+        },
+        "core_values": {
+          "lan_access_enabled": true,
+          "modules_disabled": [
+            "quality"
+          ],
+          "net_monitor": true,
+          "printer_files_delete_enabled": true,
+          "printer_files_read_enabled": true,
+          "project_print_enabled": true,
+          "security_enabled": true,
+          "slicer_callback_enabled": true
+        },
+        "payload_schema_version": 1,
+        "printer_adapters": {
+          "fixture-v2-bambu": "bambu",
+          "fixture-v2-ff": "flashforge",
+          "fixture-v2-voron": "klipper"
+        },
+        "printer_ids": [
+          "fixture-v2-bambu",
+          "fixture-v2-ff",
+          "fixture-v2-voron"
+        ],
+        "printer_tokens": {
+          "fixture-v2-bambu": "FIXTURE_V2_BAMBU_ACCESS_CODE",
+          "fixture-v2-ff": "FIXTURE_V2_FF_CHECKCODE",
+          "fixture-v2-voron": "FIXTURE_V2_MOONRAKER_APIKEY"
+        }
+      },
+      "file": "protected_v2.3diwell-backup",
+      "passphrase": "3diwell-frozen-v2-protected-fixture-passphrase",
+      "protection_mode": "password_aes256gcm",
+      "requires_password": true,
+      "sha256": "b1169c6bc18c6de520e0dbff1772f4579b3f4640c6886206cb336115b7b98b04"
+    }
+  ],
+  "note": "FROZEN v2 fixtures — NEVER regenerate or modify. Permanent restore contract."
+}

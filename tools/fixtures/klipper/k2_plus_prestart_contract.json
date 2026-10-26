@@ -1,0 +1,125 @@
+{
+ "_readme": [
+  "Alpha 2.838 — ОБЕЗЛИЧЕННАЯ фикстура предстартового контракта Klipper/Moonraker.",
+  "СТАТУС ДАННЫХ: СИНТЕТИКА. Реальный Creality K2 Plus на момент выпуска 2.838 находился",
+  "на другом компьютере и в другой сети, поэтому живая read-only разведка выполнена НЕ БЫЛА.",
+  "Значения ниже описывают ФОРМУ контракта и два разбираемых сценария, а не снятые с железа факты.",
+  "Подтверждение снимается инструментом tools/klipper_probe.py на рабочем компьютере; после этого",
+  "поле scenarios[].confirmed переводится в true отдельной выдачей.",
+  "В файле НЕТ и не должно быть: IP, серийных номеров, токенов, полного printer.cfg, тел макросов",
+  "и реального G-code."
+ ],
+ "fixture_version": 1,
+ "alpha": "2.838",
+ "printer": {
+  "synthetic_id": "k2p_fixture_0001",
+  "adapter": "klipper",
+  "model_label": "Creality K2 Plus (синтетический профиль)",
+  "moonraker_version": "v0.9.3",
+  "klipper_version": "v0.12.0"
+ },
+ "scenarios": [
+  {
+   "name": "vendor_override",
+   "confirmed": false,
+   "describe": [
+    "Гипотеза, объясняющая приёмочный дефект: имя встроенной команды BED_MESH_CALIBRATE",
+    "перекрыто gcode_macro в конфигурации принтера. Что делает такой макрос, из read-only",
+    "данных доказать нельзя — он может быть обёрткой, заглушкой или делать совсем другое."
+   ],
+   "objects": ["webhooks", "configfile", "print_stats", "virtual_sdcard", "toolhead", "bed_mesh", "gcode_move"],
+   "gcode_commands": ["BED_MESH_CALIBRATE", "BED_MESH_PROFILE", "G28", "START_PRINT", "CANCEL_PRINT", "CLEAN_NOZZLE"],
+   "config_macros": ["START_PRINT", "BED_MESH_CALIBRATE", "CLEAN_NOZZLE"],
+   "expected_plan": {
+    "selected": ["bed_mesh_calibrate"],
+    "commands": [],
+    "dispositions": [
+     {"id": "bed_mesh_calibrate", "disposition": "skipped", "state": "supported_manual", "reason": "vendor_override"}
+    ],
+    "print_allowed": false,
+    "why": "Выбрана операция, выполнение которой Farm Manager гарантировать не может: печать не начинается, и пользователю это сказано."
+   }
+  },
+  {
+   "name": "stock_klipper",
+   "confirmed": false,
+   "describe": [
+    "Контрольный сценарий: штатный Klipper без vendor-переопределения. Здесь калибровка",
+    "доказана полностью и выполняется автоматически ДО отправки файла."
+   ],
+   "objects": ["webhooks", "configfile", "print_stats", "virtual_sdcard", "toolhead", "bed_mesh", "z_tilt"],
+   "gcode_commands": ["BED_MESH_CALIBRATE", "Z_TILT_ADJUST", "G28", "START_PRINT", "CLEAN_NOZZLE"],
+   "config_macros": ["START_PRINT", "CLEAN_NOZZLE"],
+   "expected_plan": {
+    "selected": ["bed_mesh_calibrate"],
+    "commands": ["BED_MESH_CALIBRATE"],
+    "dispositions": [
+     {"id": "bed_mesh_calibrate", "disposition": "planned", "state": "supported_automatic", "reason": ""}
+    ],
+    "print_allowed": true,
+    "why": "Команда встроенная, объект bed_mesh настроен, файл операцией не управляет."
+   }
+  },
+  {
+   "name": "file_controlled",
+   "confirmed": false,
+   "describe": [
+    "Файл САМ содержит команду калибровки: вторую не запускаем, но и молча не теряем",
+    "выбор — событие видно в журнале, печать продолжается.",
+    "Alpha 2.841: прежде тем же случаем считался ЛЮБОЙ вызов стартового макроса — это и",
+    "было корнем реальной приёмки: START_PRINT есть в шапке любого файла слайсера, поэтому",
+    "калибровка не выполнялась никогда. Основание осталось одно: команда видна в файле."
+   ],
+   "objects": ["webhooks", "configfile", "print_stats", "virtual_sdcard", "toolhead", "bed_mesh"],
+   "gcode_commands": ["BED_MESH_CALIBRATE", "G28", "START_PRINT"],
+   "config_macros": ["START_PRINT"],
+   "gcode_head": ";synthetic fixture head\nG28\nBED_MESH_CALIBRATE\nG1 Z5 F600\n",
+   "expected_plan": {
+    "selected": ["bed_mesh_calibrate"],
+    "commands": [],
+    "dispositions": [
+     {"id": "bed_mesh_calibrate", "disposition": "skipped", "state": "file_controlled", "reason": "file_explicit_call"}
+    ],
+    "print_allowed": true,
+    "why": "Команда калибровки стоит в самом файле — дублировать нельзя, блокировать печать не за что."
+   }
+  },
+  {
+   "name": "unsupported",
+   "confirmed": false,
+   "describe": ["Ни объекта, ни команды: операция не показывается и в план не попадает."],
+   "objects": ["webhooks", "configfile", "print_stats", "virtual_sdcard", "toolhead"],
+   "gcode_commands": ["G28", "START_PRINT"],
+   "config_macros": ["START_PRINT"],
+   "expected_plan": {
+    "selected": ["bed_mesh_calibrate"],
+    "commands": [],
+    "dispositions": [
+     {"id": "bed_mesh_calibrate", "disposition": "skipped", "state": "unsupported", "reason": "command_missing"}
+    ],
+    "print_allowed": false,
+    "why": "Пользователь просит то, чего на принтере нет: печать не начинается."
+   }
+  }
+ ],
+ "completion_state_sequence": [
+  {"state": "queued", "meaning": "операция принята в план, команда ещё не отправлена"},
+  {"state": "running", "meaning": "команда отправлена, ответ Moonraker ещё не получен"},
+  {"state": "completed", "meaning": "скрипт вернул ответ И print_stats=standby И webhooks=ready"},
+  {"state": "failed", "meaning": "ошибка Moonraker/Klipper либо принтер не вернулся в готовность"},
+  {"state": "uncertain", "meaning": "read-timeout: команда отправлена, завершение не подтверждено, ПОВТОР ЗАПРЕЩЁН"},
+  {"state": "file_controlled", "meaning": "операцию выполняет сам файл, команда не отправляется"}
+ ],
+ "preconditions": {
+  "printer_idle": "print_stats.state == standby",
+  "klipper_ready": "webhooks.state == ready (пустое значение доказательством НЕ является)",
+  "homed": "toolhead.homed_axes содержит x, y и z; Farm Manager НИКОГДА не отправляет G28 сам"
+ },
+ "open_questions_for_real_printer": [
+  "Переопределена ли BED_MESH_CALIBRATE gcode_macro на реальном K2 Plus?",
+  "Вызывает ли START_PRINT калибровку сам и паркует ли оси?",
+  "Принимает ли START_PRINT параметр, включающий калибровку, и как он называется?",
+  "Возвращает ли /printer/gcode/script ответ после ПОЛНОГО завершения макроса?",
+  "Есть ли отдельный безопасный vendor-макрос калибровки?"
+ ]
+}

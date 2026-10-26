@@ -1,0 +1,232 @@
+/* SPDX-License-Identifier: MPL-2.0
+ * SPDX-FileCopyrightText: 2025-2026 3DiWell Team
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ */
+/* ============================================================================
+   ПАЛИТРА 3DIWELL  —  здесь живут ВСЕ цвета интерфейса.
+   Это единственный файл, который нужно открывать, чтобы менять цвета.
+
+   КАК ПОЛЬЗОВАТЬСЯ:
+   1. Найди нужный цвет ниже, поменяй значение справа от двоеточия
+      (например  --fm-accent: #4da6ff;  ->  --fm-accent: #22c55e;).
+   2. Сохрани файл и обнови страницу в браузере (Ctrl+Shift+R).
+   3. Цвет поменяется во всём приложении сразу.
+
+   ДВЕ ТЕМЫ: ниже два блока — «ТЁМНАЯ» и «СВЕТЛАЯ». Меняй цвет в той теме,
+   которая сейчас включена в приложении (переключатель темы — в шапке).
+
+   ГЛАВНЫЙ АКЦЕНТ — синий --fm-accent (кнопки, рамки, выделения). Самый «мощный»
+   цвет. У него ДВЕ строки (hex и R,G,B) — это один и тот же цвет, просто записан
+   двумя способами; при смене поменяй ОБЕ строки на один цвет.
+
+   Формат цвета: #rrggbb (hex) — как в любом графическом редакторе.
+   Нижний технический блок (после палитры) трогать НЕ нужно.
+   ============================================================================ */
+
+/* ======================= ТЁМНАЯ ТЕМА (по умолчанию) ======================= */
+:root{
+  --fm-accent: #4da6ff;  /* главный синий акцент */
+  --fm-accent-rgb: 77, 166, 255;  /* RGB-компоненты акцента для rgba() */
+  --fm-black: #000;  /* абсолютный чёрный */
+  --fm-black-rgb: 0, 0, 0;  /* RGB-компоненты чёрного для теней и оверлеев */
+  --fm-spotlight-scrim: rgba(8, 11, 16, 0.55);  /* вуаль режима «прожектора» (тёмная тема) */
+  --fm-white: #fff;  /* белый */
+  --fm-surface-deep: #0e0e10;  /* самая глубокая поверхность */
+  --fm-surface-base: #18181b;  /* основная тёмная поверхность */
+  --fm-surface-raised: #202023;  /* приподнятая панель */
+  --fm-surface-card: #27272a;  /* карточки и меню */
+  --fm-surface-control: #303030;  /* поля и управляющие элементы */
+  --fm-border-soft: #2e2e2e;  /* мягкие разделители */
+  --fm-border-dark: #3a3a3a;  /* тёмная граница */
+  --fm-border: #3f3f46;  /* основная граница */
+  --fm-border-strong: #52525b;  /* усиленная граница */
+  --fm-text-primary: #e5e7eb;  /* основной светлый текст */
+  --fm-text-bright: #e6e6e6;  /* яркий текст */
+  --fm-text-secondary: #d1d5db;  /* вторичный текст */
+  --fm-text-cool: #cdd2da;  /* холодный светло-серый текст */
+  --fm-text-muted: #9ca3af;  /* приглушённый текст */
+  --fm-text-muted-cool: #9aa0aa;  /* холодный приглушённый текст */
+  --fm-text-subtle: #6b7280;  /* малозаметный служебный текст */
+  --fm-danger: #f87171;  /* ошибка или опасное действие */
+  --fm-success: #22c55e;  /* подключение и успешное состояние */
+  --fm-error: #ef4444;  /* индикатор ошибки подключения */
+
+  /* --- тонкая настройка ШАПКИ (меняется реже) --- */
+  --fm-header-surface: #26282a;  /* основной фон новой шапки */
+  --fm-header-hover: #31343b;  /* наведение на SVG-кнопки языка */
+  --fm-header-active: #3b3f47;  /* нажатие SVG-кнопки языка */
+  --fm-header-action: #171918;  /* фон кнопок шапки */
+  --fm-header-border: #5b5b5b;  /* граница кнопок шапки */
+  --fm-header-orange: #ea5e20;  /* активный язык и рамка раскрытой карточки */
+}
+
+/* ======================= СВЕТЛАЯ ТЕМА ===================================== */
+:root[data-theme="light"]{
+  --fm-surface-deep: #e7e9ec;  /* фон страницы / самый нижний слой */
+  --fm-spotlight-scrim: rgba(15, 23, 42, 0.20);  /* вуаль «прожектора» (светлая) — лёгкое затемнение, не чёрное */
+  --fm-surface-base: #f3f4f6;  /* основные панели */
+  --fm-surface-raised: #fafbfc;  /* приподнятые панели */
+  --fm-surface-card: #ffffff;  /* карточки и меню (белый) */
+  --fm-surface-control: #ffffff;  /* поля ввода */
+  --fm-border-soft: #e9ebef;
+  --fm-border-dark: #e1e4e8;
+  --fm-border: #d4d8de;
+  --fm-border-strong: #b4bac4;
+  --fm-text-primary: #1f2329;  /* основной тёмный текст */
+  --fm-text-bright: #11151a;
+  --fm-text-secondary: #3a4048;
+  --fm-text-cool: #414853;
+  --fm-text-muted: #697079;
+  --fm-text-muted-cool: #6f7681;
+  --fm-text-subtle: #9aa1ac;
+  --fm-danger: #e11d2e;  /* глубже для контраста на светлом */
+  --fm-success: #15a34a;
+  --fm-error: #dc2626;
+}
+
+/* ============================================================================
+   ТЕХНИЧЕСКАЯ ЧАСТЬ — НЕ ТРОГАТЬ.
+   Готовый набор Tailwind «зашил» акцент прямо в классы кнопок и рамок
+   (text-neon / bg-neon / border-neon). Эти строки перенаправляют их на
+   переменную --fm-accent выше — без них акцент на кнопках не менялся бы.
+   ============================================================================ */
+.text-neon{color:rgba(var(--fm-accent-rgb),var(--tw-text-opacity,1))}
+.bg-neon{background-color:rgba(var(--fm-accent-rgb),var(--tw-bg-opacity,1))}
+.border-neon{border-color:rgba(var(--fm-accent-rgb),var(--tw-border-opacity,1))}
+.bg-neon\/5{background-color:rgba(var(--fm-accent-rgb),.05)}
+.bg-neon\/10{background-color:rgba(var(--fm-accent-rgb),.1)}
+.bg-neon\/20{background-color:rgba(var(--fm-accent-rgb),.2)}
+.border-neon\/30{border-color:rgba(var(--fm-accent-rgb),.3)}
+.border-neon\/40{border-color:rgba(var(--fm-accent-rgb),.4)}
+.border-neon\/50{border-color:rgba(var(--fm-accent-rgb),.5)}
+
+/* ============================================================================
+   РАСШИРЕННАЯ ПАЛИТРА — цвета, вынесенные из app.css «как есть» (значение 1:1,
+   одно значение, без вариаций по теме). Число в имени = светлота (00 тёмный …
+   99 светлый). Близкие оттенки с суффиксом b/c/d — кандидаты на объединение.
+   ============================================================================ */
+:root{
+  /* Нейтральные (серые / чёрные / белые) */
+  --fm-neutral-05: #0d0d0d;
+  --fm-neutral-09: #161616;
+  --fm-neutral-10: #1a1a1a;
+  --fm-neutral-11: #1b1b1b;
+  --fm-neutral-12: #1c1c1f;
+  --fm-neutral-13: #1f1f23;
+  --fm-neutral-13b: #202020;
+  --fm-neutral-13c: #202021;
+  --fm-neutral-14: #242424;
+  --fm-neutral-15: #252525;
+  --fm-neutral-15b: #252526;
+  --fm-neutral-16: #2a2a2a;
+  --fm-neutral-17: #2b2b2b;
+  --fm-neutral-17b: #2c2c2c;
+  --fm-neutral-18: #2d2d2d;
+  --fm-neutral-20: #333333;
+  --fm-neutral-20b: #343434;
+  --fm-neutral-22: #383838;
+  --fm-neutral-29: #4a4a4a;
+  --fm-neutral-35: #5a5a5a;
+  --fm-neutral-37: #5b5b62;
+  --fm-neutral-42: #6a6a6a;
+  --fm-neutral-44: #697079;
+  --fm-neutral-46: #71717a;
+  --fm-neutral-47: #6f7681;
+  --fm-neutral-48: #7a7a7a;
+  --fm-neutral-54: #898989;
+  --fm-neutral-54b: #8a8a8a;
+  --fm-neutral-56: #8b8b94;
+  --fm-neutral-60: #9a9a9a;
+  --fm-neutral-64: #9aa1ac;
+  --fm-neutral-70: #b2b3b3;
+  --fm-neutral-81: #cfcfcf;
+  --fm-neutral-86: #dcdcdc;
+  --fm-neutral-88: #e0e0e0;
+  --fm-neutral-90: #e4e4e7;
+  --fm-neutral-90b: #e5e5e5;
+  --fm-neutral-94: #f0f0f0;
+  --fm-neutral-97: #f7f7f7;
+  /* Синие / сине-серые */
+  --fm-blue-05: #0b0d10;
+  --fm-blue-06: #0d0d10;
+  --fm-blue-08: #0f1219;
+  --fm-blue-08b: #11151a;
+  --fm-blue-10: #0f1722;
+  --fm-blue-14: #1f2329;
+  --fm-blue-18: #2a2d34;
+  --fm-blue-19: #04395e;
+  --fm-blue-22: #26344a;
+  --fm-blue-24: #353b43;
+  --fm-blue-25: #3a4048;
+  --fm-blue-29: #414853;
+  --fm-blue-33: #4b525c;
+  --fm-blue-35: #4d5563;
+  --fm-blue-37: #44597a;
+  --fm-blue-40: #0a6cc4;
+  --fm-blue-44: #1277d0;
+  --fm-blue-47: #6c7686;
+  --fm-blue-60: #38bdf8;
+  --fm-blue-74: #7ac0ff;
+  --fm-blue-74b: #b4bac4;
+  --fm-blue-75: #b4bdcb;
+  --fm-blue-78: #bcc4d0;
+  --fm-blue-80: #c0c9d6;
+  --fm-blue-83: #cfd3d8;
+  --fm-blue-84: #cbd5e1;
+  --fm-blue-84b: #cdd5e1;
+  --fm-blue-85: #d4d8de;
+  --fm-blue-89: #e0e3e6;
+  --fm-blue-90: #e1e4e8;
+  --fm-blue-91: #cfe6ff;
+  --fm-blue-91b: #e2e6ed;
+  --fm-blue-91c: #e4e8ee;
+  --fm-blue-92: #e7e9ec;
+  --fm-blue-93: #e9ebef;
+  --fm-blue-94: #e6eefa;
+  --fm-blue-94b: #eceef1;
+  --fm-blue-94c: #eef0f2;
+  --fm-blue-94d: #eef0f3;
+  --fm-blue-95: #eef1f5;
+  --fm-blue-95b: #eef1f6;
+  --fm-blue-95c: #f0f2f4;
+  --fm-blue-96: #f3f4f6;
+  --fm-blue-97: #f6f7f9;
+  --fm-blue-98: #fafbfc;
+  /* Янтарные / жёлтые */
+  --fm-amber-47: #eab308;
+  --fm-amber-56: #fbbf24;
+  --fm-amber-95: #fff7e6;
+  /* Оранжевые */
+  --fm-orange-07: #1c1407;
+  --fm-orange-37: #b45309;
+  --fm-orange-52: #ef7f1a;
+  /* Красные */
+  --fm-red-49: #e81123;
+  --fm-red-50: #e11d2e;
+  --fm-red-51: #dc2626;
+  --fm-red-66: #e0796f;
+  --fm-red-82: #fca5a5;
+  /* Зелёные */
+  --fm-green-36: #15a34a;
+  --fm-green-58: #4ade80;
+  --fm-green-91: #d6fbe4;
+  /* Приоритет срока сдачи (статусные, одинаковы в обеих темах) */
+  --fm-prio-red-bg: rgba(248,113,113,0.14);
+  --fm-prio-red-bd: rgba(248,113,113,0.5);
+  --fm-prio-red-tx: #f87171;
+  --fm-prio-yellow-bg: rgba(251,191,36,0.14);
+  --fm-prio-yellow-bd: rgba(251,191,36,0.5);
+  --fm-prio-yellow-tx: #fbbf24;
+}
+
+/* Дополнительно вынесено из инлайн-стилей index.html (1:1) */
+:root{
+  --fm-blue-07: #101014;
+  --fm-neutral-12b: #1e1e1f;
+  --fm-neutral-65: #a1a1aa;
+  /* Подсказки: тип принтера + подсветка совместимых работ */
+  --fm-job-hl-bg: rgba(77,166,255,0.13);
+  --fm-job-hl-ring: rgba(77,166,255,0.85);
+}

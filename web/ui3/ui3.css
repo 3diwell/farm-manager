@@ -1,0 +1,2051 @@
+/* SPDX-License-Identifier: MPL-2.0
+ * SPDX-FileCopyrightText: 2025-2026 3DiWell Team
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ */
+/* ============================================================================
+   UI 3.0 — СЛОЙ ОФОРМЛЕНИЯ рабочего интерфейса (Alpha 2.915).
+
+   ЧТО ЭТО. Владелец вернул исходную точку: раскладка ровно как в UI 2.0, разница только в
+   ВИДЕ. Страница /ui3 отдаёт тот же web/index.html и дополнительно подключает этот лист.
+   Здесь нет ни одной новой кнопки и ни одного нового блока — только цвет, форма, шрифт,
+   отступы и глубина. Рабочий интерфейс 2.0 этот файл НЕ подключает: его вид не меняется.
+
+   ЗАМЫСЕЛ (минималистичный high-tech, сдержанность в духе Apple):
+     * ГЛУБИНА ВМЕСТО ПЕСТРОТЫ. Три уровня поверхности — фон страницы, панель, карточка —
+       различаются светлотой на несколько процентов и тончайшей линией края. Категории видны
+       не разными цветами, а разной высотой над фоном и воздухом между ними;
+     * ЦВЕТ — ЯЗЫК СОСТОЯНИЯ, а не украшение. Один акцент (синий) на действие; красный,
+       зелёный, янтарный — только состояние принтера. Больше цветов на экране нет;
+     * ТИПОГРАФИКА ВЕДЁТ ВЗГЛЯД. Заголовки разделов — мелкие, разряжённые, приглушённые;
+       имена и цифры — крупнее и контрастнее. Цифры табличные, чтобы столбцы не «дышали»;
+     * ТИХИЕ ГРАНИЦЫ. Вместо жирных рамок — линии в 1 пиксель прозрачностью 6-10 %;
+     * СПОКОЙНОЕ ДВИЖЕНИЕ. Наведение поднимает элемент на волос, переходы 120-160 мс;
+       при системной настройке «меньше движения» анимации выключаются.
+   ============================================================================ */
+
+/* ── 1. Палитра: слой 3.0 НЕ заводит собственных цветов. ───────────────────────────────── */
+/*  ЧТО ИЗМЕНИЛОСЬ В 2.936 И ЗАЧЕМ.
+    Раньше у слоя была своя палитра из 20 переменных --u3-*, и на странице /ui3 работали
+    ДВЕ палитры сразу. Замер на стенде: 1309 окрашиваний брали цвет из токенов дизайн-системы
+    --fm-* и 339 — из --u3-*. Причём это одни и те же смыслы в двух экземплярах: основной
+    текст #e5e7eb против #f2f3f5, акцент #4da6ff против #3b82f6, а «ошибка» совпадала
+    значение в значение (#f87171) под двумя именами.
+    Главное следствие: модуль «Оформление и темы» меняет ТОЛЬКО токены --fm-*. Вторую
+    палитру он не видел — при включённой теме владельца /ui3 получался бы пёстрым: часть
+    экрана перекрашена, часть намертво зашита здесь.
+
+    Теперь UI 3.0 — это ТЕМА дизайн-системы, а не второй набор цветов. Ниже те же самые
+    значения, что были у --u3-*, но записанные в штатные токены FM; весь остальной лист
+    обращается к ним через var(--fm-*), своих цветов в нём не осталось.
+    Модуль «Оформление» добавляет свой <style> последним в <head>, специфичность у него
+    такая же (html[data-fm-appearance-active="1"]), поэтому по порядку следования он
+    побеждает эти правила и управляет всем /ui3 целиком. */
+html.ui3-mode {
+  /*  ПОВЕРХНОСТИ — три уровня глубины: фон страницы, панель, карточка. */
+  --fm-surface-deep: #0a0a0c;        /* фон страницы */
+  --fm-surface-base: #141418;        /* панель — первый уровень */
+  --fm-surface-raised: #1b1b21;      /* карточка внутри панели — второй уровень */
+  --fm-surface-card: #22222a;        /* карточка под курсором, активные капсулы */
+  --fm-surface-control: #1b1b21;     /* поля и управляющие элементы */
+
+  /*  ТЕКСТ — три ступени: имя, вторичное, служебное. */
+  --fm-text-primary: #f2f3f5;
+  --fm-text-bright: #f2f3f5;
+  --fm-text-muted: #a8adb7;
+  --fm-text-muted-cool: #a8adb7;
+  --fm-text-subtle: #6d727c;
+
+  /*  ГРАНИЦЫ — не рамки, а линии прозрачностью 7-12 %. Считаются ОТ ЦВЕТА ТЕКСТА, поэтому
+      одно правило верно и в тёмной теме, и в светлой, и в любой теме модуля: где текст
+      светлый — линия светлая, где тёмный — тёмная. */
+  --fm-border-soft: color-mix(in srgb, var(--fm-text-primary) 7%, transparent);
+  --fm-border-dark: color-mix(in srgb, var(--fm-text-primary) 7%, transparent);
+  --fm-border: color-mix(in srgb, var(--fm-text-primary) 7%, transparent);
+  --fm-border-strong: color-mix(in srgb, var(--fm-text-primary) 12%, transparent);
+
+  /*  ЦВЕТ — язык состояния: один акцент на действие, три цвета на состояние. */
+  --fm-accent: #3b82f6;
+  --fm-accent-rgb: 59, 130, 246;
+  --fm-success: #34d399;
+  --fm-warn: #f5a524;
+  --fm-warn-rgb: 245, 165, 36;
+  --fm-danger: #f87171;
+  --fm-error: #f87171;
+
+  /*  ── ЛОКАЛЬНОЕ РАСШИРЕНИЕ СЛОЯ ────────────────────────────────────────────────────────
+      Только то, для чего в дизайн-системе токена НЕТ. Всё считается от её же токенов,
+      поэтому тема владельца управляет и этим. */
+  /*  Второй план фонового пятна: смещение фона страницы к служебному серому. В тёмной теме
+      выходит светлее фона, в светлой — темнее, то есть ровно прежние #0e0e11 и #eceef1. */
+  --u3-bg-2: color-mix(in srgb, var(--fm-surface-deep) 96%, var(--fm-text-subtle));
+  --u3-accent-soft: rgba(var(--fm-accent-rgb), .14);
+  --u3-shadow: 0 1px 2px rgba(var(--fm-black-rgb), .45),
+               0 10px 28px -14px rgba(var(--fm-black-rgb), .75);
+  --u3-shadow-hi: 0 2px 4px rgba(var(--fm-black-rgb), .4),
+                  0 18px 40px -18px rgba(var(--fm-black-rgb), .8);
+  /*  Скругления: при установленном модуле «Оформление» их задаёт он (--fm-theme-radius-*),
+      без модуля остаются нынешние значения слоя. */
+  --u3-r-panel: var(--fm-theme-radius-2xl, 18px);
+  --u3-r-card: var(--fm-theme-radius-xl, 14px);
+  --u3-r-ctl: var(--fm-theme-radius-lg, 10px);
+  /*  2.936: --u3-fast и --u3-hover ИСПОЛЬЗОВАЛИСЬ (16 и 4 раза), но нигде не задавались —
+      значит шестнадцать переходов и четыре подсветки при наведении молча не работали.
+      Теперь заданы: время совпадает с .14s, которым размечен весь остальной слой. */
+  --u3-fast: .14s ease;
+  --u3-hover: color-mix(in srgb, var(--fm-text-primary) 6%, transparent);
+}
+html.ui3-mode[data-theme="light"] {
+  --fm-surface-deep: #f2f3f5;
+  --fm-surface-base: #ffffff;
+  --fm-surface-raised: #f7f8fa;
+  --fm-surface-card: #ffffff;
+  --fm-surface-control: #ffffff;
+  --fm-text-primary: #12151a;
+  --fm-text-bright: #12151a;
+  --fm-text-muted: #4b5158;
+  --fm-text-muted-cool: #4b5158;
+  --fm-text-subtle: #7b828c;
+  --fm-border-soft: color-mix(in srgb, var(--fm-text-primary) 9%, transparent);
+  --fm-border-dark: color-mix(in srgb, var(--fm-text-primary) 9%, transparent);
+  --fm-border: color-mix(in srgb, var(--fm-text-primary) 9%, transparent);
+  --fm-border-strong: color-mix(in srgb, var(--fm-text-primary) 16%, transparent);
+  --fm-accent: #0a6cff;
+  --fm-accent-rgb: 10, 108, 255;
+  --fm-success: #0f9d63;
+  --fm-warn: #b26a00;
+  --fm-warn-rgb: 178, 106, 0;
+  --fm-danger: #d92d20;
+  --fm-error: #d92d20;
+  --u3-accent-soft: rgba(var(--fm-accent-rgb), .10);
+  --u3-shadow: 0 1px 2px rgba(var(--fm-black-rgb), .06),
+               0 10px 24px -16px rgba(var(--fm-black-rgb), .28);
+  --u3-shadow-hi: 0 2px 6px rgba(var(--fm-black-rgb), .08),
+                  0 18px 36px -20px rgba(var(--fm-black-rgb), .35);
+}
+
+/*  ── Общий сброс кнопок слоя ────────────────────────────────────────────────────────────
+    Десять правил ниже начинались с одних и тех же двух строк. Единой кнопки в
+    дизайн-системе FM нет: .fm-set-act (настройки), .ex-btn (проводник) и .fm-inv-btn
+    (склад) — блочные, во всю ширину строки, и на капсулу или круглую кнопку в строке не
+    ложатся. Поэтому кнопки здесь свои, но сброс у них один. Цвета и радиусы — токены. */
+html.ui3-mode .ui3-pp-back,
+html.ui3-mode .ui3-q-go,
+html.ui3-mode .ui3-q-del,
+html.ui3-mode .ui3-q-allow-go,
+html.ui3-mode .ui3-qpick,
+html.ui3-mode .ui3-qtrail,
+html.ui3-mode .ui3-qtnote,
+html.ui3-mode .p2ed-del { appearance: none; cursor: pointer; }
+
+/* ── 2. Основание страницы. ─────────────────────────────────────────────────────────────── */
+html.ui3-mode, html.ui3-mode body {
+  background: radial-gradient(1200px 700px at 18% -8%, var(--u3-bg-2), var(--fm-surface-deep) 60%) fixed;
+  color: var(--fm-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+html.ui3-mode body { letter-spacing: -0.003em; }
+/*  Фоновый рисунок рабочего интерфейса приглушаем: он спорит с чистыми поверхностями. */
+html.ui3-mode .zoom-wrap > svg,
+html.ui3-mode body > svg { opacity: .25 !important; }
+
+/* ── 3. Шапка. Ничего своего: она РОВНО ТАКАЯ ЖЕ, как в рабочем интерфейсе 2.0. ────────── */
+/*  2.937, заказ владельца: «бар сверху должен быть точно таким же, как в UI 2.0».
+    До этого слой переодевал шапку целиком — матовое стекло вместо фигуры, свои кнопки
+    настроек и языка вместо фигурного SVG, сдвинутые логотип и строка брокера. Всё это
+    убрано: шапку рисует общий лист app.css, как и на странице «/».
+    В середине остаются ТОЛЬКО те кнопки, которые владелец просил добавить: переключатель
+    интерфейсов .fm-ui-switch (у него свой вид из app.css, общий с 2.0) и кнопка демо-
+    принтеров ниже. Ни одного правила на header, .fm-header-* и .fm-ui-switch здесь больше
+    нет — иначе вид разошёлся бы с 2.0. */
+/*  Текст в баре обязан совпадать с 2.0 и по буквам. Оформление 3.0 задаёт всей странице
+    сжатый межбуквенный интервал и сглаживание шрифта (раздел 2) — в баре это давало строку
+    брокера на 1.5 px уже, чем в 2.0 (замер: 239.2 против 237.7). Внутри шапки возвращаем
+    обычные значения. */
+html.ui3-mode header, html.ui3-mode header * {
+  letter-spacing: normal; -webkit-font-smoothing: auto;
+}
+/* ── 4. Панели — первый уровень глубины. ────────────────────────────────────────────────── */
+html.ui3-mode .glass-panel,
+html.ui3-mode .printers-pane,
+html.ui3-mode [data-tour="suggest"] {
+  background: var(--fm-surface-base) !important;
+  border: 1px solid var(--fm-border) !important;
+  border-radius: var(--u3-r-panel) !important;
+  box-shadow: var(--u3-shadow) !important;
+  backdrop-filter: none !important;
+}
+/*  Внутренний свет по верхней кромке — приём объёмных поверхностей: панель кажется
+    приподнятой без единой жирной линии. */
+html.ui3-mode .glass-panel, html.ui3-mode .printers-pane, html.ui3-mode [data-tour="suggest"] {
+  box-shadow: var(--u3-shadow), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 4.5%, transparent) !important;
+}
+html.ui3-mode[data-theme="light"] .glass-panel,
+html.ui3-mode[data-theme="light"] .printers-pane,
+html.ui3-mode[data-theme="light"] [data-tour="suggest"] {
+  box-shadow: var(--u3-shadow), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 90%, transparent) !important;
+}
+
+/*  Воздух между панелями: категории разделяет пустота, а не разноцветные рамки. */
+/*  Края панелей вровень с верхним баром: измерено на стенде — бар отступает от края
+    экрана ровно настолько, насколько теперь колонки; лишние поля внутри убраны. */
+html.ui3-mode .left-col { gap: 14px !important; padding: 14px 0 14px 0 !important; }
+html.ui3-mode .projects-pane { padding: 14px 0 28px 14px !important; }
+/*  Список принтеров — главное на левой стороне: он забирает всю свободную высоту,
+    панель подсказок остаётся справочной и не съедает пол-экрана. */
+html.ui3-mode .printers-pane { flex: 1 1 auto !important; min-height: 0 !important; }
+html.ui3-mode [data-tour="suggest"] { flex: 0 0 auto !important; max-height: 26% !important; }
+/*  16.10.2026 (R-110): пока в панели висит разовое предложение включить подсказки, панель берёт
+    столько, сколько нужно карточке: при 26 % на окне 1366×768 её кнопки уходили за нижний край
+    (замер стенда). Ответ на предложение убирает карточку, и панель возвращается к 26 %. */
+html.ui3-mode [data-tour="suggest"]:has(.fm-help-offer) { max-height: max(26%, 150px) !important; }
+
+/* ── 5. Заголовки разделов — мелкие, разряжённые, приглушённые. ─────────────────────────── */
+html.ui3-mode h2 {
+  font-size: 11px !important; font-weight: 700 !important;
+  letter-spacing: .1em !important; text-transform: uppercase !important;
+  color: var(--fm-text-subtle) !important;
+}
+/*  Заголовок «ПРОЕКТЫ» крупнее — это заголовок страницы, а не подпись раздела. */
+html.ui3-mode .projects-pane > section > div:first-child h2 {
+  font-size: 13px !important; color: var(--fm-text-muted) !important; letter-spacing: .08em !important;
+}
+
+/* ── 6. Карточка принтера — второй уровень: своя поверхность, тихая линия, мягкий подъём. ─ */
+html.ui3-mode .printer-card {
+  background: var(--fm-surface-raised) !important;
+  border: 1px solid var(--fm-border) !important;
+  border-radius: var(--u3-r-card) !important;
+  box-shadow: none !important;
+  padding: 10px 12px !important;
+  transition: background-color .14s ease, border-color .14s ease, transform .14s ease;
+}
+html.ui3-mode .printer-card:hover {
+  background: var(--fm-surface-card) !important; border-color: var(--fm-border-strong) !important;
+  transform: translateY(-1px);
+}
+/*  Нажатие отвечает мгновенно даже когда главный поток занят стартовой работой:
+    прижатие рисуется стилем, без участия скриптов (2.926). */
+html.ui3-mode .printer-card:active {
+  transform: scale(.985); border-color: var(--fm-border-strong) !important;
+  transition-duration: .05s;
+}
+html.ui3-mode .printer-card .name-2l { font-size: 13px !important; font-weight: 650 !important;
+  color: var(--fm-text-primary) !important; letter-spacing: -0.01em; }
+/*  Строка состояния внутри карточки — вложенная плашка, чтобы данные не сливались с именем. */
+html.ui3-mode .printer-card .fm-pcard-ic { color: var(--fm-text-subtle) !important; }
+html.ui3-mode .pc-model-head {
+  color: var(--fm-text-subtle) !important; letter-spacing: .1em !important;
+  padding: 10px 2px 2px !important; font-weight: 700 !important;
+}
+
+/*  Точка состояния: ровный кружок с тихим кольцом вместо неонового ореола. Смысл тот же,
+    шума меньше — на тридцати карточках это решает. */
+html.ui3-mode .printer-card .rounded-full.shadow-\[0_0_6px_currentColor\] {
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 16%, transparent) !important;
+  width: 9px !important; height: 9px !important;
+}
+/*  Строка данных под именем: вложенная поверхность без рамки — данные читаются, коробка
+    не спорит с карточкой. */
+html.ui3-mode .printer-card .fm-bg-base.border {
+  background: color-mix(in srgb, var(--fm-text-primary) 3.5%, transparent) !important; border-color: transparent !important;
+  border-radius: 10px !important; height: 30px !important;
+}
+/*  Слово состояния — мелко и ровно; цвет уже несёт точка. */
+html.ui3-mode .printer-card .uppercase.font-bold {
+  font-size: 9.5px !important; font-weight: 600 !important; letter-spacing: .07em !important;
+}
+
+/* ── 7. Состояния — единственное место, где есть цвет. ──────────────────────────────────── */
+html.ui3-mode .text-red-400, html.ui3-mode .text-red-500 { color: var(--fm-danger) !important; }
+html.ui3-mode .text-green-400, html.ui3-mode .text-green-500 { color: var(--fm-success) !important; }
+html.ui3-mode .text-yellow-400, html.ui3-mode .text-amber-400 { color: var(--fm-warn) !important; }
+html.ui3-mode .text-neon { color: var(--fm-accent) !important; }
+
+/*  Кнопки в шапке панели («Добавить», меню вида) — капсулы: главная мягко залита акцентом,
+    вспомогательная прозрачная. Обводок-коробок нет. */
+html.ui3-mode .printers-pane .border-neon,
+html.ui3-mode .printers-pane button.rounded-lg {
+  border-radius: 999px !important; border-color: transparent !important;
+}
+html.ui3-mode .printers-pane .border-neon {
+  background: var(--u3-accent-soft) !important; color: var(--fm-accent) !important;
+}
+
+/* ── 8. Кнопки. Главная — залитая акцентом; остальные тихие, проявляются на наведении. ──── */
+html.ui3-mode button { transition: background-color .14s ease, color .14s ease, border-color .14s ease; }
+html.ui3-mode .bg-neon, html.ui3-mode button.bg-neon {
+  background: var(--fm-accent) !important; color: var(--fm-white) !important;
+  border: 0 !important; border-radius: var(--u3-r-ctl) !important; box-shadow: none !important;
+  font-weight: 600 !important;
+}
+html.ui3-mode .bg-neon:hover { filter: brightness(1.08); }
+html.ui3-mode .border-neon { border-color: var(--fm-accent) !important; }
+html.ui3-mode .bg-neon\/10, html.ui3-mode .bg-neon\/5, html.ui3-mode .bg-neon\/20 {
+  background: var(--u3-accent-soft) !important;
+}
+/*  Поля ввода и выпадающие списки: вложенная поверхность вместо рамки-коробки. */
+html.ui3-mode input:not([type="checkbox"]):not([type="radio"]),
+html.ui3-mode select, html.ui3-mode textarea {
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent) !important;
+  border: 1px solid var(--fm-border) !important;
+  border-radius: var(--u3-r-ctl) !important; color: var(--fm-text-primary) !important;
+}
+html.ui3-mode input:focus, html.ui3-mode select:focus, html.ui3-mode textarea:focus {
+  outline: none !important; border-color: var(--fm-accent) !important;
+  box-shadow: 0 0 0 3px var(--u3-accent-soft) !important;
+}
+
+/* ── 9. Таблица задач: строки-полосы вместо сетки линий. ────────────────────────────────── */
+html.ui3-mode .qt-panel { background: var(--fm-surface-base) !important; }
+html.ui3-mode .qt-panel thead th, html.ui3-mode .qtfilters {
+  color: var(--fm-text-subtle) !important; letter-spacing: .08em; font-size: 10.5px;
+}
+html.ui3-mode [data-tour="qtdrop"] {
+  border: 1px dashed var(--fm-border-strong) !important; border-radius: var(--u3-r-panel) !important;
+  background: color-mix(in srgb, var(--fm-text-primary) 2%, transparent) !important;
+}
+/*  Светлая тема: правило НУЖНО, хотя выражение то же самое. Специфичность здесь выше
+    (html.ui3-mode[data-theme="light"] против html.ui3-mode), поэтому в светлой теме оно
+    побеждает более позднюю заливку карточки из раздела 21.1 — и полоса задач остаётся
+    вуалью на панели, а не поверхностью карточки. Замер: без этой строки карточка
+    светлеет со (235,235,239) до (247,248,250). */
+html.ui3-mode[data-theme="light"] [data-tour="qtdrop"] {
+  background: color-mix(in srgb, var(--fm-text-primary) 2%, transparent) !important;
+}
+
+/* ── 10. Полосы прокрутки — тонкие, появляются при наведении. ───────────────────────────── */
+html.ui3-mode *::-webkit-scrollbar { width: 8px; height: 8px; }
+html.ui3-mode *::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--fm-text-primary) 10%, transparent); border-radius: 999px; border: 2px solid transparent;
+  background-clip: content-box;
+}
+html.ui3-mode *:hover::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--fm-text-primary) 18%, transparent); background-clip: content-box; }
+html.ui3-mode[data-theme="light"] *::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--fm-text-primary) 14%, transparent); background-clip: content-box; }
+
+/* ── 11. Цифры — табличные: столбцы не пляшут при обновлении данных. ────────────────────── */
+html.ui3-mode .printer-card, html.ui3-mode .qt-panel, html.ui3-mode .plan-grid-cols {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 12. Уважение к системной настройке «меньше движения». ──────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html.ui3-mode * { transition: none !important; animation: none !important; }
+  html.ui3-mode .printer-card:hover { transform: none; }
+  html.ui3-mode .printer-card:active { transform: none; }
+}
+
+/* ── 13. Пульт выбранного принтера (2.963, по макету владельца) ─────────────────────────
+   Нажали карточку — вместо проектов и задач здесь появляется пульт: слева управление
+   (печать, температуры, материал, служебное, пометки), справа вверху камера, под ней
+   задание. Камера остаётся ОБЩИМ блоком программы: он пристыковывается к .ui3-camslot по
+   измеренным координатам (переменные --u3-cam-*). Никакой второй камеры в коде нет. */
+html.ui3-mode .ui3-pp { display: flex; flex-direction: column; min-width: 0; background: var(--fm-surface-card); border: 1px solid var(--fm-border); border-radius: var(--u3-r-panel); box-shadow: var(--u3-shadow); }
+html.ui3-mode .ui3-pp-head { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 12px 8px 18px; border-bottom: 1px solid var(--fm-border); min-width: 0; }
+html.ui3-mode .ui3-pp-dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; background: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-dot.run { background: var(--fm-accent); box-shadow: 0 0 0 4px var(--u3-accent-soft); }
+html.ui3-mode .ui3-pp-dot.ok { background: var(--fm-success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fm-success) 22%, transparent); }
+html.ui3-mode .ui3-pp-dot.wait { background: var(--fm-warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fm-warn) 22%, transparent); }
+html.ui3-mode .ui3-pp-dot.bad { background: var(--fm-danger); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fm-danger) 22%, transparent); }
+html.ui3-mode .ui3-pp-title { min-width: 0; }
+html.ui3-mode .ui3-pp-name { font-size: 16px !important; font-weight: 700 !important; letter-spacing: -0.005em !important; text-transform: none !important; color: var(--fm-text-primary) !important; margin: 0 !important; line-height: 1.15 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .ui3-pp-model { font-size: 12.5px; color: var(--fm-text-subtle); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .ui3-pp-state { flex: 0 0 auto; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); color: var(--fm-text-muted); white-space: nowrap; }
+html.ui3-mode .ui3-pp-state.run { background: var(--u3-accent-soft); color: var(--fm-accent); }
+html.ui3-mode .ui3-pp-state.ok { background: color-mix(in srgb, var(--fm-success) 16%, transparent); color: var(--fm-success); }
+html.ui3-mode .ui3-pp-state.wait { background: color-mix(in srgb, var(--fm-warn) 16%, transparent); color: var(--fm-warn); }
+html.ui3-mode .ui3-pp-state.bad { background: color-mix(in srgb, var(--fm-danger) 14%, transparent); color: var(--fm-danger); }
+html.ui3-mode .ui3-pp-sp { flex: 1 1 auto; min-width: 0; }
+html.ui3-mode .ui3-pp-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 8px; border-radius: 999px; border: 1px solid var(--fm-border-strong); color: var(--fm-text-muted); font-size: 12px; font-weight: 600; white-space: nowrap; flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-chip .ui3-pp-ic { width: 14px; height: 14px; margin: 0; color: var(--fm-success); opacity: 1; }
+html.ui3-mode .ui3-pp-ib { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 9px; display: grid; place-items: center; color: var(--fm-text-muted); border: 1px solid transparent; background: transparent; padding: 0; cursor: pointer; }
+html.ui3-mode .ui3-pp-ib:hover { background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); border-color: var(--fm-border); color: var(--fm-text-primary); }
+html.ui3-mode .ui3-pp-ib .ui3-pp-ic { width: 18px; height: 18px; margin: 0; opacity: 1; }
+html.ui3-mode .ui3-pp-alert { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--fm-border); font-size: 13px; color: var(--fm-text-primary); background: color-mix(in srgb, var(--fm-warn) 14%, transparent); }
+html.ui3-mode .ui3-pp-alert > .ui3-pp-ic { width: 18px; height: 18px; margin: 0; opacity: 1; color: var(--fm-warn); flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-alert.sev-error, html.ui3-mode .ui3-pp-alert.sev-critical { background: color-mix(in srgb, var(--fm-danger) 14%, transparent); }
+html.ui3-mode .ui3-pp-alert.sev-error > .ui3-pp-ic, html.ui3-mode .ui3-pp-alert.sev-critical > .ui3-pp-ic { color: var(--fm-danger); }
+html.ui3-mode .ui3-pp-alert-t { flex: 1 1 auto; min-width: 0; line-height: 1.4; }
+html.ui3-mode .ui3-pp-alert-t b { font-weight: 600; }
+html.ui3-mode .ui3-pp-alert-more { margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-alert-lnk { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--fm-accent); background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+/*  Тело: две колонки на широком экране. На узком (правая половина уже ~700 точек) —
+    одна колонка, камера с заданием первыми, потом управление. */
+/*  2.1004 (корень дефекта со снимка владельца): колонка с камерой забирала свой максимум
+    ВСЕГДА, а колонка управления получала остаток — в виде «дашборд» это 214 точек, и в них
+    уже ничего не помещалось. Теперь минимум объявлен у УПРАВЛЕНИЯ: оно не уже 300 точек,
+    а камера отдаёт лишнее. Ширина панели здесь зависит от раскладки, а не от окна, поэтому
+    медиазапрос тут не помощник — помогает именно minmax у первой колонки. */
+html.ui3-mode .ui3-pp-body { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(0, 384px); gap: 18px; padding: 16px 18px 18px; align-items: stretch; min-width: 0; }
+html.ui3-mode .ui3-pp-body > div { min-width: 0; }
+@media (max-width: 1599px) {
+  html.ui3-mode .ui3-pp-body { grid-template-columns: 1fr; }
+  html.ui3-mode .ui3-pp-view { order: -1; }
+  html.ui3-mode .ui3-pp-view .ui3-camslot { flex: 0 0 auto; aspect-ratio: 16 / 9; min-height: 0; }
+  html.ui3-mode .ui3-pp-view .ui3-pp-part { flex: 0 0 auto; aspect-ratio: 16 / 9; min-height: 0; }
+}
+/*  Левая колонка: разделы с подписью капителью, между разделами тонкая линия. */
+html.ui3-mode .ui3-pp-ctl { display: flex; flex-direction: column; min-width: 0; }
+html.ui3-mode .ui3-pp-sec { padding: 0 0 14px; margin: 0 0 14px; border-bottom: 1px solid var(--fm-border); }
+html.ui3-mode .ui3-pp-sec:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+html.ui3-mode .ui3-pp-t { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-t .mini { font-size: 11px; letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--fm-text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/*  2.1004 (дефект со снимка владельца): в виде «дашборд» колонка управления сужается до
+    282 px, и кнопки в ряду ужимались НИЖЕ своей надписи — «Отправить файл с компьютера»
+    (нужно 172 px, досталось 159) наезжала на соседнюю. Ряд теперь переносит кнопки на
+    вторую строку, а если и одной кнопке места мало — надпись идёт в две строки.
+    Вылезти за кнопку тексту больше нечем. */
+html.ui3-mode .ui3-pp-row { display: flex; align-items: center; gap: 8px; min-width: 0;
+  flex-wrap: wrap; }
+html.ui3-mode .ui3-pp-row + .ui3-pp-row { margin-top: 8px; }
+/*  Кнопка пульта: значок и слово, один вид на все действия. Заливка — только у главного
+    действия (пауза, продолжить, печатать), «Стоп» — красный контур. */
+/*  2.1004: высота кнопки задаётся минимумом, а не жёстким числом, и надпись может перенестись
+    на две строки. Раньше стояли height: 38px и white-space: nowrap — в узкой колонке кнопка
+    ужималась ниже своей надписи, и текст вылезал наружу (снимок владельца 11.09.2026). */
+html.ui3-mode .ui3-pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 6px 16px; border-radius: var(--u3-r-ctl); border: 1px solid var(--fm-border-strong); background: var(--fm-surface-raised); color: var(--fm-text-primary); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; min-width: 0;
+  white-space: normal; text-align: center; line-height: 1.2; }
+html.ui3-mode .ui3-pp-btn .ui3-pp-ic { width: 16px; height: 16px; margin: 0; opacity: 1; flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-btn:hover { border-color: var(--fm-accent); }
+html.ui3-mode .ui3-pp-btn:disabled { opacity: .45; cursor: default; border-color: var(--fm-border-strong); }
+html.ui3-mode .ui3-pp-btn.pri { background: var(--fm-accent); border-color: var(--fm-accent); color: var(--fm-white); }
+html.ui3-mode .ui3-pp-btn.pri:hover { filter: brightness(1.08); }
+html.ui3-mode .ui3-pp-btn.danger { color: var(--fm-danger); border-color: color-mix(in srgb, var(--fm-danger) 45%, transparent); background: transparent; }
+html.ui3-mode .ui3-pp-btn.danger:hover { background: color-mix(in srgb, var(--fm-danger) 10%, transparent); border-color: var(--fm-danger); }
+html.ui3-mode .ui3-pp-btn.ghost { background: transparent; }
+html.ui3-mode .ui3-pp-btn.dim { opacity: .45; cursor: default; }
+html.ui3-mode .ui3-pp-btn.dim:hover { border-color: var(--fm-border-strong); }
+/*  2.1004: у базовой кнопки появился min-height 38px (чтобы двухстрочная надпись не резалась),
+    и без такой же поправки здесь маленькая кнопка стала бы 38px вместо 34px: min-height
+    сильнее height. Высота маленьких кнопок оставлена прежней. */
+html.ui3-mode .ui3-pp-btn.sm { height: auto; min-height: 34px; padding: 4px 11px; font-size: 12.5px; gap: 6px; }
+html.ui3-mode .ui3-pp-btn.warn { color: var(--fm-warn); border-color: color-mix(in srgb, var(--fm-warn) 50%, transparent); }
+/*  Файл на принтере: выпадающий список в той же оболочке, что и кнопки. */
+html.ui3-mode .ui3-pp-sel { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 10px 0 12px; border-radius: var(--u3-r-ctl); border: 1px solid var(--fm-border-strong); background: var(--fm-surface-raised); min-width: 0; flex: 1 1 auto; }
+html.ui3-mode .ui3-pp-sel .ui3-pp-ic { width: 16px; height: 16px; margin: 0; opacity: 1; color: var(--fm-text-subtle); flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-sel select { flex: 1 1 auto; min-width: 0; height: 100% !important; border: 0 !important; background: transparent !important; color: var(--fm-text-primary); font: inherit; font-size: 13px; padding: 0 !important; outline: none; text-overflow: ellipsis; box-shadow: none !important; cursor: pointer; }
+html.ui3-mode .ui3-pp-sel select option { color: var(--fm-text-primary); background: var(--fm-surface-card); }
+html.ui3-mode .ui3-pp-sel small { font-size: 12px; color: var(--fm-text-subtle); flex: 0 0 auto; }
+/*  Разделённая кнопка «Печатать»: слева печать, справа стрелка со списком катушек. */
+html.ui3-mode .ui3-pp-split { position: relative; display: inline-flex; align-items: stretch; flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-split .ui3-pp-btn.pri { border-radius: var(--u3-r-ctl) 0 0 var(--u3-r-ctl); }
+html.ui3-mode .ui3-pp-split .ui3-pp-btn.pri:last-child { border-radius: var(--u3-r-ctl); }
+html.ui3-mode .ui3-pp-split .ui3-pp-btn.dd { border-radius: 0 var(--u3-r-ctl) var(--u3-r-ctl) 0; padding: 0 8px; border-left: 1px solid rgba(255, 255, 255, .3); }
+html.ui3-mode .ui3-pp-split .ui3-pp-btn.dd .ui3-pp-ic { width: 14px; height: 14px; }
+/*  ── Свой список файлов принтера (2.975) ────────────────────────────────────────────────
+    Системное выпадающее поле заменено своим: в системное нельзя поставить кнопку удаления.
+    Внешне поле осталось прежним — та же высота, рамка и подпись с количеством, — чтобы
+    владелец не искал знакомый элемент заново. */
+html.ui3-mode .ui3-pp-fsel { position: relative; padding: 0; }
+html.ui3-mode .ui3-pp-selbtn { display: flex; align-items: center; gap: 8px; width: 100%; height: 100%;
+  padding: 0 10px 0 12px; border: 0; background: transparent; color: var(--fm-text-primary);
+  font: inherit; font-size: 13px; text-align: left; cursor: pointer; border-radius: inherit; }
+html.ui3-mode .ui3-pp-selbtn:disabled { cursor: default; opacity: .55; }
+html.ui3-mode .ui3-pp-selbtn .t { flex: 1 1 auto; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .ui3-pp-selbtn .cv { width: 14px; height: 14px; opacity: .8; }
+html.ui3-mode .ui3-pp-menu.files { left: 0; right: 0; width: auto; }
+html.ui3-mode .ui3-pp-menu-l { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+html.ui3-mode .ui3-pp-fit { display: flex; align-items: center; gap: 4px; border-radius: 8px; }
+html.ui3-mode .ui3-pp-fit:hover { background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); }
+html.ui3-mode .ui3-pp-fit.on { background: var(--u3-accent-soft); }
+html.ui3-mode .ui3-pp-fit .nm { flex: 1 1 auto; min-width: 0; height: 34px; padding: 0 8px; border: 0;
+  background: transparent; color: var(--fm-text-primary); font: inherit; font-size: 13px;
+  text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .ui3-pp-fnone { padding: 10px; color: var(--fm-text-subtle); font-size: 12px; }
+
+html.ui3-mode .ui3-pp-menu { position: absolute; right: 0; top: calc(100% + 6px); width: 270px; background: var(--fm-surface-card); border: 1px solid var(--fm-border-strong); border-radius: 12px; box-shadow: var(--u3-shadow); padding: 6px; z-index: 40; }
+html.ui3-mode .ui3-pp-menu-h { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--fm-text-subtle); font-weight: 700; padding: 6px 10px 4px; }
+html.ui3-mode .ui3-pp-menu-it { display: flex; align-items: center; gap: 10px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--fm-text-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; min-width: 0; }
+html.ui3-mode .ui3-pp-menu-it:hover { background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); }
+html.ui3-mode .ui3-pp-menu-it.on { background: var(--u3-accent-soft); }
+html.ui3-mode .ui3-pp-menu-it .sw { width: 14px; height: 14px; border-radius: 4px; flex: 0 0 auto; border: 1px solid var(--fm-border-strong); }
+html.ui3-mode .ui3-pp-menu-it .sw.ext { background: repeating-linear-gradient(45deg, var(--fm-text-subtle) 0 2px, transparent 2px 5px); opacity: .7; }
+html.ui3-mode .ui3-pp-menu-it .tx { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .ui3-pp-menu-it small { color: var(--fm-text-subtle); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+/*  Температуры: текущая крупно, цель рядом, поле со стрелками. Горячий нагреватель — рыжий значок. */
+/*  2.1004: ряд температуры перестал быть жёсткой сеткой. В узкой колонке столбец текущего
+    значения схлопывался в ноль (замер: 0 px при содержимом 87 px), и «25°» показывалось
+    обрезком. Теперь это гибкий ряд: значение не ужимается ниже своего текста, подпись
+    держит общую ширину (столбики выровнены), а регулятор при нехватке места переносится
+    на вторую строку целиком. */
+html.ui3-mode .ui3-pp-temp { display: flex; flex-wrap: wrap;
+  align-items: center; gap: 10px; min-height: 40px; }
+html.ui3-mode .ui3-pp-temp > .ui3-pp-ic { flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-temp .lb { flex: 0 0 auto; min-width: 60px; }
+html.ui3-mode .ui3-pp-temp .cur { flex: 1 1 auto; min-width: max-content; }
+html.ui3-mode .ui3-pp-temp .ui3-pp-step { flex: 0 0 auto; margin-left: auto; }
+html.ui3-mode .ui3-pp-temp + .ui3-pp-temp { margin-top: 4px; }
+html.ui3-mode .ui3-pp-temp > .ui3-pp-ic { width: 20px; height: 20px; margin: 0; opacity: 1; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-temp.hot > .ui3-pp-ic { color: #ff7a3d; }
+html.ui3-mode .ui3-pp-temp .lb { font-weight: 600; font-size: 13px; white-space: nowrap; }
+html.ui3-mode .ui3-pp-temp .cur { display: flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; min-width: 0; }
+html.ui3-mode .ui3-pp-temp .cur b { font-size: 20px; font-weight: 650; line-height: 1; }
+html.ui3-mode .ui3-pp-temp .cur i { font-style: normal; color: var(--fm-text-subtle); font-size: 12px; }
+html.ui3-mode .ui3-pp-temp .cur .tg { color: var(--fm-text-muted); font-size: 13px; }
+html.ui3-mode .ui3-pp-step { display: inline-flex; align-items: center; height: 32px; border: 1px solid var(--fm-border-strong); border-radius: 9px; background: var(--fm-surface-raised); overflow: hidden; }
+html.ui3-mode .ui3-pp-step button { width: 30px; height: 100%; display: grid; place-items: center; color: var(--fm-text-muted); background: transparent; border: 0; padding: 0; cursor: pointer; }
+html.ui3-mode .ui3-pp-step button:hover { background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); color: var(--fm-text-primary); }
+html.ui3-mode .ui3-pp-step button .ui3-pp-ic { width: 14px; height: 14px; margin: 0; opacity: 1; }
+html.ui3-mode .ui3-pp-step input { width: 52px; height: 100% !important; border: 0 !important; border-left: 1px solid var(--fm-border) !important; border-right: 1px solid var(--fm-border) !important; border-radius: 0 !important; background: transparent !important; color: var(--fm-text-primary); text-align: center; font: inherit; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 0 !important; outline: none; box-shadow: none !important; -moz-appearance: textfield; }
+html.ui3-mode .ui3-pp-step input::-webkit-outer-spin-button, html.ui3-mode .ui3-pp-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+html.ui3-mode .ui3-pp-presets { display: flex; gap: 6px; margin-top: 8px; padding-left: 32px; flex-wrap: wrap; }
+html.ui3-mode .ui3-pp-presets button { height: 26px; padding: 0 10px; border-radius: 7px; border: 0; background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); color: var(--fm-text-muted); font: inherit; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
+html.ui3-mode .ui3-pp-presets button:hover { background: var(--u3-accent-soft); color: var(--fm-accent); }
+/*  R-103 (2.984): кнопка «изменить пресеты» — тихий квадрат в конце ряда; редактор — та же
+    вложенная поверхность, что и у прочих разделов пульта, колонки под имя и три температуры. */
+html.ui3-mode .ui3-pp-presets button.edit { width: 26px; padding: 0; justify-content: center; }
+html.ui3-mode .ui3-pp-presets button.edit .ui3-pp-ic { width: 13px; height: 13px; margin: 0; }
+html.ui3-mode .ui3-pp-pedit { margin-top: 8px; margin-left: 32px; padding: 10px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--fm-text-primary) 3.5%, transparent); display: flex; flex-direction: column; gap: 6px; }
+html.ui3-mode .ui3-pp-pedit-h { display: flex; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 700; }
+html.ui3-mode .ui3-pp-pedit-h small { font-weight: 500; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-pedit-row { display: grid; grid-template-columns: minmax(70px, 1.3fr) 1fr 1fr 1fr 26px; gap: 6px; align-items: center; }
+html.ui3-mode .ui3-pp-pedit-row.head { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-pedit-row input { height: 28px !important; padding: 0 8px !important; font-size: 12.5px; min-width: 0; width: 100%; }
+html.ui3-mode .ui3-pp-pedit-row input[type="number"] { font-variant-numeric: tabular-nums; }
+html.ui3-mode .ui3-pp-pedit-row .del { width: 26px; height: 26px; border: 0; border-radius: 7px; background: transparent;
+  color: var(--fm-text-subtle); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+html.ui3-mode .ui3-pp-pedit-row .del:hover { color: var(--fm-danger); background: color-mix(in srgb, var(--fm-danger) 10%, transparent); }
+html.ui3-mode .ui3-pp-pedit-row .del .ui3-pp-ic { width: 13px; height: 13px; margin: 0; }
+html.ui3-mode .ui3-pp-pedit-err { font-size: 12px; color: var(--fm-danger); }
+html.ui3-mode .ui3-pp-pedit-act { display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
+html.ui3-mode .ui3-pp-presets button b { color: var(--fm-text-primary); font-variant-numeric: tabular-nums; }
+html.ui3-mode .ui3-pp-presets button.off { color: var(--fm-text-subtle); }
+/*  Материал: слоты AMS/CFS, активный отмечен точкой; ниже катушки со склада. */
+html.ui3-mode .ui3-pp-ams { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+html.ui3-mode .ui3-pp-ams .lab { font-size: 11px; font-weight: 700; color: var(--fm-text-subtle); width: 34px; flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-slot { width: 56px; height: 38px; border-radius: 9px; border: 1px solid var(--fm-border-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; position: relative; background: var(--fm-surface-raised); }
+html.ui3-mode .ui3-pp-slot .sw { width: 22px; height: 8px; border-radius: 3px; background: color-mix(in srgb, var(--fm-text-primary) 10%, transparent); }
+html.ui3-mode .ui3-pp-slot small { font-size: 10px; font-weight: 700; letter-spacing: .02em; color: var(--fm-text-muted); line-height: 1; }
+html.ui3-mode .ui3-pp-slot.on { border-color: var(--fm-accent); box-shadow: 0 0 0 3px var(--u3-accent-soft); }
+html.ui3-mode .ui3-pp-slot.on::after { content: ''; position: absolute; right: -4px; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--fm-accent); border: 2px solid var(--fm-surface-card); }
+html.ui3-mode .ui3-pp-slot.empty { opacity: .5; }
+html.ui3-mode .ui3-pp-slot.ext .sw { background: repeating-linear-gradient(45deg, var(--fm-text-subtle) 0 2px, transparent 2px 5px); opacity: .6; }
+html.ui3-mode .ui3-pp-stock { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+html.ui3-mode .ui3-pp-stock .r { display: grid; grid-template-columns: 12px minmax(48px, auto) minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 12.5px; color: var(--fm-text-muted); white-space: nowrap; }
+html.ui3-mode .ui3-pp-stock .r i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+html.ui3-mode .ui3-pp-stock .r .tx { overflow: hidden; text-overflow: ellipsis; color: var(--fm-text-primary); }
+html.ui3-mode .ui3-pp-stock .r .g { font-variant-numeric: tabular-nums; }
+html.ui3-mode .ui3-pp-stock .r.low .g { color: var(--fm-warn); }
+html.ui3-mode .ui3-pp-note { font-size: 12px; color: var(--fm-text-subtle); line-height: 1.45; }
+html.ui3-mode .ui3-pp-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+/*  Правая колонка: панель вида (камера/деталь), само окно, внизу задание. Окно тянется
+    на всё место между ними — как просил владелец. */
+html.ui3-mode .ui3-pp-view { display: flex; flex-direction: column; min-width: 0; gap: 10px; }
+html.ui3-mode .ui3-pp-vbar { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+html.ui3-mode .ui3-pp-seg { display: inline-flex; padding: 3px; border-radius: 9px; background: color-mix(in srgb, var(--fm-text-primary) 5%, transparent); border: 1px solid var(--fm-border); }
+html.ui3-mode .ui3-pp-seg button { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border: 0; border-radius: 6px; background: transparent; color: var(--fm-text-muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+html.ui3-mode .ui3-pp-seg button.on { background: var(--fm-surface-card); color: var(--fm-text-primary); box-shadow: var(--u3-shadow); }
+html.ui3-mode .ui3-pp-seg button .ui3-pp-ic { width: 14px; height: 14px; margin: 0; opacity: 1; }
+html.ui3-mode .ui3-pp-vlbl { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--fm-text-muted); }
+html.ui3-mode .ui3-pp-vlbl .ui3-pp-ic { width: 14px; height: 14px; margin: 0; opacity: 1; }
+html.ui3-mode .ui3-pp-live { font-size: 10px; font-weight: 800; letter-spacing: .1em; padding: 4px 8px; border-radius: 6px; background: #e0243c; color: #fff; }
+html.ui3-mode .ui3-camslot { position: relative; flex: 1 1 auto; min-height: 216px; width: 100%; border: 1px solid var(--fm-border); border-radius: var(--u3-r-card); background: radial-gradient(120% 90% at 50% 60%, #2a2a33 0%, #101014 70%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow: hidden; }
+html.ui3-mode .ui3-camslot-hint { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .45); }
+html.ui3-mode .ui3-pp-part { position: relative; flex: 1 1 auto; min-height: 216px; border-radius: var(--u3-r-card); border: 1px solid var(--fm-border); background: var(--fm-surface-base); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+html.ui3-mode .ui3-pp-part img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+html.ui3-mode .ui3-pp-part-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--fm-text-subtle); font-size: 12.5px; text-align: center; padding: 16px; }
+html.ui3-mode .ui3-pp-part-empty .ui3-pp-ic.big { width: 40px; height: 40px; margin: 0; opacity: .5; }
+html.ui3-mode .ui3-camnone { font-size: 12px; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-job { margin-top: auto; padding-top: 4px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+html.ui3-mode .ui3-pp-job .fn { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; min-width: 0; }
+html.ui3-mode .ui3-pp-job .fn .ui3-pp-ic { width: 16px; height: 16px; margin: 0; opacity: 1; color: var(--fm-text-subtle); flex: 0 0 auto; }
+html.ui3-mode .ui3-pp-file { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .ui3-pp-parts { display: flex; flex-wrap: wrap; gap: 6px; }
+html.ui3-mode .ui3-pp-parts span { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 7px; background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); font-size: 12px; color: var(--fm-text-muted); white-space: nowrap; }
+html.ui3-mode .ui3-pp-parts b { color: var(--fm-text-primary); font-variant-numeric: tabular-nums; }
+html.ui3-mode .ui3-pp-bar { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--fm-text-primary) 8%, transparent); overflow: hidden; margin-top: 4px; }
+html.ui3-mode .ui3-pp-bar > i { display: block; height: 100%; background: var(--fm-accent); border-radius: 3px; }
+html.ui3-mode .ui3-pp-bar.wait > i { background: var(--fm-warn); }
+html.ui3-mode .ui3-pp-bar.bad > i { background: var(--fm-danger); }
+html.ui3-mode .ui3-pp-tline { display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; min-width: 0; }
+html.ui3-mode .ui3-pp-tline .pct { font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -0.01em; }
+html.ui3-mode .ui3-pp-tline .rem { font-weight: 600; font-size: 14px; white-space: nowrap; }
+html.ui3-mode .ui3-pp-tline .sub { margin-left: auto; color: var(--fm-text-subtle); font-size: 12px; white-space: nowrap; }
+html.ui3-mode .ui3-pp-tsub { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--fm-text-subtle); font-size: 12px; font-variant-numeric: tabular-nums; }
+html.ui3-mode .ui3-pp-tsub span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+html.ui3-mode .ui3-pp-tsub .ui3-pp-ic { width: 13px; height: 13px; margin: 0; opacity: .9; }
+html.ui3-mode .ui3-pp-ic { width: 13px; height: 13px; margin-right: 6px; opacity: .8; vertical-align: -2px; display: inline-block; }
+
+/*  2.974: окно камеры открывается своим обычным размером — во весь экран — и лишь потом
+    стыкуется к отведённому месту. Владелец видел это как вспышку большого окна при каждом
+    переключении камеры и вида. Пока метка ui3-cam-arm висит, окно ещё не на месте: держим его
+    невидимым и не принимающим нажатий. Метка снимается в том же кадре, где посчитано место,
+    поэтому задержки появления нет. */
+html.ui3-mode.ui3-cam-arm #fm-overlay-root > .fm-cam-ov {
+  opacity: 0 !important; pointer-events: none !important; }
+
+/*  Стыковка общего блока камеры: он остаётся тем же элементом программы, только занимает
+    отведённое место вместо всего экрана. */
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov {
+  inset: auto !important;
+  left: var(--u3-cam-left) !important; top: var(--u3-cam-top) !important;
+  width: var(--u3-cam-w) !important; height: var(--u3-cam-h) !important;
+  background: transparent !important; padding: 0 !important; z-index: 60 !important;
+  pointer-events: none !important;
+}
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov button,
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov label,
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov input,
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov select {
+  pointer-events: auto !important;
+}
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov > div {
+  max-width: 100% !important; max-height: 100% !important; width: 100% !important;
+  height: 100% !important; border-radius: var(--u3-r-panel) !important; padding: 8px !important;
+  background: var(--fm-surface-base) !important; border-color: var(--fm-border) !important;
+  box-shadow: var(--u3-shadow) !important;
+  display: flex !important; flex-direction: column !important;
+  /*  2.933: видео НЕ МОЖЕТ вылезти за карточку ни при каком масштабе (снимок владельца
+      на 110%: кадр торчал за рамку «P1 — Live»). Жёсткая обрезка по границе карточки
+      плюс пределы каждому промежуточному слою. */
+  overflow: hidden !important;
+}
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov > div * {
+  max-width: 100%; max-height: 100%; min-width: 0; min-height: 0; box-sizing: border-box;
+}
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov video,
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov img {
+  max-width: 100% !important; max-height: 100% !important;
+  width: 100% !important; height: 100% !important; object-fit: contain !important;
+  border-radius: 10px !important;
+}
+
+/* ── 14. Выбранный принтер, значки и файлы (2.917) ──────────────────────────────────────
+   Выбор виден сразу: карточка приподнята, слева акцентная грань, лёгкое свечение акцента.
+   Значки берутся из набора самой программы (nozzle, bed, print, layers, folder, file) —
+   свои не рисуем, чтобы стиль совпадал с остальным интерфейсом. */
+html.ui3-mode .printer-card.ui3-sel {
+  background: var(--fm-surface-card) !important;
+  border-color: color-mix(in srgb, var(--fm-accent) 55%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--fm-accent) 35%, transparent),
+              0 10px 26px -14px color-mix(in srgb, var(--fm-accent) 60%, transparent) !important;
+  transform: translateY(-1px);
+}
+/*  Акцентная грань слева — короткая, а не рамка вокруг: спокойнее и заметно. */
+html.ui3-mode .printer-card.ui3-sel::before {
+  content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px;
+  border-radius: 0 3px 3px 0; background: var(--fm-accent);
+}
+
+
+/* ── 15. Правая половина: проекты ИЛИ задачи во всю ширину (2.918) ──────────────────────
+   Владелец просил два состояния вместо двух блоков подряд: каждому разделу — весь экран.
+   Переключатель — капсула в духе остальных сегментов интерфейса. */
+/*  2.936: это ШТАТНЫЙ сегментный переключатель дизайн-системы (.fm-seg / .fm-seg-b) —
+    тот же, что в настройках и на других экранах 2.0. Раньше здесь лежала его копия: свой
+    сброс кнопки, свои отступы, свой цвет. Копия удалена, разметка переведена на компонент,
+    а тут осталась только ФОРМА слоя: капсула вместо прямоугольника и тихая активная часть
+    вместо заливки акцентом. Всё остальное приходит из компонента. */
+/*  2.977 (R-099): бар — на всю ширину половины на ЛЮБОЙ вкладке. Раньше он был inline-flex
+    и растягивался лишь там, где половина была колонкой (проекты, задачи); на очереди и
+    филаменте он сжимался до своих кнопок. */
+html.ui3-mode .ui3-rtabs { display: flex; width: 100%; margin: 0 0 12px; border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+/*  Отступы на пиксель меньше прежних: у компонента есть рамка в 1 px (её цветом он
+    показывает активное состояние), и без поправки капсула стала бы на 2 px выше и шире —
+    замер показал 41.34 px вместо прежних 39.8, и весь столбец справа съезжал вниз.
+    gap: 0 — по той же причине: у компонента промежуток между содержимым 6 px, и счётчик
+    очереди <i class="ui3-rtabs-n"> с его собственным margin-left: 7px отъехал бы на 13. */
+html.ui3-mode .ui3-rtabs .fm-seg-b { border-radius: 999px; padding: 5px 17px;
+  font-size: 12px; font-weight: 600; color: var(--fm-text-subtle); gap: 0; }
+/*  Наведение в 3.0 меняет только цвет: подложка появляется лишь у активной части. */
+html.ui3-mode .ui3-rtabs .fm-seg-b:hover:not(.active) { color: var(--fm-text-primary);
+  background: transparent; }
+/*  2.1001: кнопка модуля — один значок, без подписи. Ширина одинаковая у всех кнопок,
+    поэтому бар не растёт от длинных названий. Правило в том же слое, иначе перебивается. */
+html.ui3-mode .ui3-rtabs .ui3-rtabs-mod { gap: 0; padding: 5px 6px; }
+html.ui3-mode .ui3-rtabs .ui3-rtabs-mod svg { width: 16px; height: 16px; }
+html.ui3-mode .ui3-rtabs .fm-seg-b.active {
+  color: var(--fm-text-primary); background: var(--fm-surface-card);
+  border-color: transparent; box-shadow: var(--u3-shadow); }
+/*  Показываем ровно один раздел; скрытый убираем из потока, чтобы не оставлял пустых полей. */
+html.ui3-mode.ui3-right-projects .ui3-task { display: none !important; }
+html.ui3-mode.ui3-right-tasks .ui3-proj { display: none !important; }
+/*  Прочие разделы правой половины (сроки, безопасность) относятся к проектам. */
+html.ui3-mode.ui3-right-tasks .projects-pane > section:not(:first-of-type) { display: none !important; }
+
+/* ── 16. Зона задач и карточки проектов (2.919) ─────────────────────────────────────────
+   Замечания владельца: кнопка «Открыть» была огромной (замер: 1022x152 точки), а ячейки
+   проектов — крупные квадраты с текстом по центру. Здесь и то и другое приведено к
+   спокойному виду: обычная кнопка нормального размера и карточка, читаемая слева направо. */
+
+/*  Полоса задач: слева подпись и счётчик, справа обычная кнопка. Полоса остаётся местом,
+    куда можно перетащить файл, — поэтому пунктирная рамка сохранена, но стала тоньше. */
+html.ui3-mode [data-tour="qtdrop"] {
+  display: flex !important; align-items: center !important; gap: 16px !important;
+  padding: 12px 16px !important; margin-bottom: 14px !important;
+  border-width: 1px !important; border-radius: var(--u3-r-panel) !important;
+}
+html.ui3-mode [data-tour="qtdrop"] > div:first-child { gap: 2px !important; }
+html.ui3-mode [data-tour="qtdrop"] h2 { margin: 0 !important; }
+/*  Кнопка «Открыть»: из блока во всю ширину — в обычную кнопку у правого края. */
+html.ui3-mode .qt-open {
+  flex: 0 0 auto !important; margin-left: auto !important;
+  flex-direction: row !important; gap: 8px !important;
+  height: 34px !important; min-height: 0 !important; padding: 0 16px !important;
+  border-radius: var(--u3-r-ctl) !important; border: 0 !important;
+  background: var(--u3-accent-soft) !important;
+}
+html.ui3-mode .qt-open:hover { background: color-mix(in srgb, var(--fm-accent) 24%, transparent) !important; }
+html.ui3-mode .qt-open svg { width: 16px !important; height: 16px !important;
+  color: var(--fm-accent) !important; }
+html.ui3-mode .qt-open span { font-size: 13px !important; font-weight: 600 !important;
+  color: var(--fm-accent) !important; }
+
+/*  Карточки проектов. Было: квадрат 276x276, всё по центру. Стало: карточка, которая
+    читается как строка списка — имя сверху слева, цифры под ним, срок отдельной меткой.
+    Кольцо выполнения по периметру сохранено: это узнаваемый знак программы, и оно точнее
+    показывает долю, чем цифра. */
+html.ui3-mode .plan-grid-cols {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 12px !important;
+}
+html.ui3-mode .plan-cell {
+  background: var(--fm-surface-raised) !important;
+  border: 1px solid var(--fm-border) !important;
+  border-radius: var(--u3-r-card) !important;
+  box-shadow: none !important;
+  padding: 14px 16px !important;
+  text-align: left !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  min-height: 118px !important; aspect-ratio: auto !important;
+  transition: background-color .14s ease, border-color .14s ease, transform .14s ease;
+}
+html.ui3-mode .plan-cell:hover {
+  background: var(--fm-surface-card) !important; border-color: var(--fm-border-strong) !important;
+  transform: translateY(-1px);
+}
+html.ui3-mode .plan-cell .pc-body { align-items: flex-start !important; gap: 6px !important; }
+html.ui3-mode .plan-cell .pc-name {
+  font-size: 14px !important; font-weight: 650 !important; letter-spacing: -0.01em !important;
+  color: var(--fm-text-primary) !important; text-align: left !important; padding: 0 !important;
+  line-height: 1.3 !important;
+}
+html.ui3-mode .plan-cell .pc-metarow {
+  display: flex !important; align-items: baseline !important; gap: 10px !important;
+  justify-content: flex-start !important;
+}
+html.ui3-mode .plan-cell .pc-meta {
+  font-family: inherit !important; font-size: 12px !important;
+  font-variant-numeric: tabular-nums !important; color: var(--fm-text-subtle) !important;
+}
+/*  Процент — единственная цифра, которой позволено быть акцентной. */
+html.ui3-mode .plan-cell .pc-meta.text-neon {
+  color: var(--fm-text-primary) !important; font-size: 15px !important; font-weight: 650 !important;
+}
+html.ui3-mode .plan-cell .pc-rework { color: var(--fm-warn) !important; font-size: 11px !important; }
+/*  Кольцо выполнения: повторяет скругление карточки (было 9px против 14px — из-за этого
+    выглядело сбоем рамки), тоньше и без неонового ореола. Долю показывает длина дуги. */
+html.ui3-mode .plan-cell .plan-ring rect {
+  rx: 13px !important; ry: 13px !important;
+  x: 1px !important; y: 1px !important;
+  width: calc(100% - 2px) !important; height: calc(100% - 2px) !important;
+  stroke-width: 1.6px !important;
+  filter: none !important;
+  opacity: .9;
+}
+/*  Метка срока — маленькая капсула, а не отдельная кнопка-плашка. */
+html.ui3-mode .plan-cell .due-chip-wrap { margin-top: auto !important; width: 100% !important;
+  display: flex !important; align-items: center !important; gap: 8px !important; }
+html.ui3-mode .plan-cell .dc-created { font-size: 10.5px !important; color: var(--fm-text-subtle) !important; }
+html.ui3-mode .plan-cell .dc-chip {
+  border-radius: 999px !important; font-size: 10.5px !important; font-weight: 600 !important;
+  padding: 3px 9px !important; border: 1px solid var(--fm-border) !important;
+  background: transparent !important; color: var(--fm-text-subtle) !important; margin-left: auto !important;
+}
+html.ui3-mode .plan-cell .dc-chip:hover { border-color: var(--fm-border-strong) !important;
+  color: var(--fm-text-muted) !important; }
+/*  Превью деталей — ровный ряд снизу, одинаковые скругления. */
+html.ui3-mode .plan-cell .pc-thumbs { gap: 4px !important; margin-top: 10px !important; }
+html.ui3-mode .plan-cell .pc-thumbs img { border-radius: 6px !important; }
+
+/* ── 17. Очередь ожидания (2.920) ───────────────────────────────────────────────────────
+   Третье состояние правой половины. Строка очереди читается слева направо: файл, материал,
+   что решил подбор, и действие. Пока принтер не найден, кнопки запуска нет вовсе — нечего
+   нажимать по ошибке. */
+html.ui3-mode.ui3-right-queue .ui3-proj,
+html.ui3-mode.ui3-right-queue .ui3-task { display: none !important; }
+/*  2.929: пульт принтера — исключение: он открывается ПОВЕРХ любого состояния правой
+    половины, включая «Очередь». Раньше правило прятало и его: владелец нажимал на
+    принтер из очереди и видел чёрное поле — тело пульта скрыто, оставался лишь тёмный
+    слот камеры офлайн-принтера. */
+html.ui3-mode.ui3-right-queue .projects-pane > section:not(.ui3-q):not(.ui3-pp) { display: none !important; }
+html.ui3-mode .ui3-rtabs-n { font-style: normal; margin-left: 7px; font-size: 10.5px;
+  font-weight: 800; color: var(--fm-accent); }
+
+html.ui3-mode .ui3-q { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+html.ui3-mode .ui3-q-note { font-size: 12px; line-height: 1.5; color: var(--fm-text-subtle);
+  max-width: 900px; }
+html.ui3-mode .ui3-q-empty { font-size: 12.5px; color: var(--fm-text-subtle); font-style: italic; }
+html.ui3-mode .ui3-q-list { display: flex; flex-direction: column; gap: 8px; }
+html.ui3-mode .ui3-q-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; min-width: 0; padding: 11px 14px;
+  background: var(--fm-surface-raised); border: 1px solid var(--fm-border);
+  border-radius: var(--u3-r-card); border-left-width: 3px; border-left-color: var(--fm-border);
+}
+html.ui3-mode .ui3-q-row.ready { border-left-color: var(--fm-success); }
+html.ui3-mode .ui3-q-file { flex: 1 1 160px; min-width: 0; font-size: 13px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .ui3-q-mat { flex: 0 0 auto; font-size: 11px; color: var(--fm-text-subtle);
+  background: color-mix(in srgb, var(--fm-text-primary) 5%, transparent); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+html.ui3-mode .ui3-q-state { flex: 0 0 auto; font-size: 12px; max-width: 340px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .ui3-q-state b { color: var(--fm-success); font-weight: 650; }
+html.ui3-mode .ui3-q-state em { color: var(--fm-text-subtle); font-style: normal; }
+html.ui3-mode .ui3-q-go {
+  border: 0; font: inherit; font-size: 12px; font-weight: 600;
+  height: 30px; padding: 0 16px; border-radius: var(--u3-r-ctl);
+  background: color-mix(in srgb, var(--fm-success) 16%, transparent); color: var(--fm-success);
+}
+html.ui3-mode .ui3-q-go:hover:not(:disabled) { background: color-mix(in srgb, var(--fm-success) 26%, transparent); }
+html.ui3-mode .ui3-q-go:disabled { opacity: .5; cursor: default; }
+html.ui3-mode .ui3-q-del { border: 0; background: transparent;
+  color: var(--fm-text-subtle); font-size: 17px; line-height: 1; padding: 4px 8px; border-radius: 8px; }
+html.ui3-mode .ui3-q-del:hover { color: var(--fm-danger); background: color-mix(in srgb, var(--fm-danger) 12%, transparent); }
+/*  15.09.2026: под строкой — почему принтер подходит или нет, по одному на строку. Длинное
+    имя принтера или материала переносится, а не режется и не выталкивает кнопки. */
+html.ui3-mode .ui3-q-why { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+  font-size: 11.5px; line-height: 1.45; color: var(--fm-text-subtle); overflow-wrap: anywhere; }
+
+/*  Кому разрешён запуск. По умолчанию не разрешено никому — это предохранитель, поэтому
+    счётчик всегда на виду. Сама отметка ставится у ПРИНТЕРОВ (2.921): список галочек не
+    годится, когда принтеров сотни, а решение принимается глядя на конкретную машину. */
+html.ui3-mode .ui3-q-allow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  padding: 12px 14px; border: 1px dashed var(--fm-border); border-radius: var(--u3-r-card); }
+html.ui3-mode .ui3-q-allow-h { width: 100%; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-q-allow-n { display: inline-flex; align-items: baseline; gap: 5px;
+  font-size: 12px; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-q-allow-n b { font-size: 15px; font-weight: 700; color: var(--fm-text-primary); }
+html.ui3-mode .ui3-q-allow-go {
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+  color: var(--fm-accent); background: color-mix(in srgb, var(--fm-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fm-accent) 34%, transparent);
+  border-radius: 999px; padding: 6px 14px; transition: background var(--u3-fast); }
+html.ui3-mode .ui3-q-allow-go:hover { background: color-mix(in srgb, var(--fm-accent) 22%, transparent); }
+html.ui3-mode .ui3-q-allow-t { flex: 1 1 220px; min-width: 0; font-size: 11.5px;
+  color: var(--fm-text-subtle); }
+
+/*  ── 18. Отметка принтеров для очереди прямо в их панели (2.921) ─────────────────────── */
+/*  Кнопка режима стоит рядом с «список/сетка» и «Добавить» — там, где владелец её ищет. */
+html.ui3-mode .ui3-qpick {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 22px; padding: 0; border-radius: 7px;
+  color: var(--fm-text-subtle); background: transparent; border: 1px solid transparent;
+  transition: color var(--u3-fast), background var(--u3-fast), border-color var(--u3-fast); }
+html.ui3-mode .ui3-qpick svg { width: 14px; height: 14px; }
+html.ui3-mode .ui3-qpick:hover { color: var(--fm-text-primary); background: var(--u3-hover); }
+html.ui3-mode .ui3-qpick.is-on { color: var(--fm-accent);
+  background: color-mix(in srgb, var(--fm-accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--fm-accent) 38%, transparent); }
+
+/*  Метка на карточке: видна ВСЕГДА, а не только в режиме отметки — иначе владелец не знает,
+    какие машины автоматика вправе занять. Стоит в строке имени: правый верхний угол занят
+    значком активности, и поверх него метка налезала бы. */
+html.ui3-mode .ui3-qa {
+  align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 999px; margin-left: 4px;
+  color: var(--fm-accent); background: color-mix(in srgb, var(--fm-accent) 26%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fm-accent) 60%, transparent); }
+html.ui3-mode .ui3-qa svg { width: 10px; height: 10px; }
+/*  В режиме отметки карточка — переключатель: показываем это рамкой, а не текстом поверх. */
+html.ui3-mode .printer-card.ui3-qpick-t {
+  border-style: dashed !important;
+  border-color: color-mix(in srgb, var(--fm-accent) 45%, transparent) !important; }
+html.ui3-mode .printer-card.ui3-qpick-t:hover {
+  background: color-mix(in srgb, var(--fm-accent) 8%, transparent); }
+
+/*  ── 20. Вид «Список»: настоящие строки (2.922) ─────────────────────────────────────── */
+/*  Третий вид принтеров: одна машина = одна строка. Значения — те же, что в «Ячейках». */
+html.ui3-mode .pc-rows { display: flex; flex-direction: column; gap: 6px; }
+/*  2.935: строки НЕ сжимаются — иначе список складывается сам в себя.
+    Контейнер «Списка» (.pc-scroll) — ОДНОВРЕМЕННО колонка flex и область прокрутки, и
+    высота у него определённая (flex:1 от панели). Поэтому при нехватке места flex по
+    умолчанию (flex-shrink:1) ужимает сами строки вместо того, чтобы включить прокрутку,
+    а min-height:0 в правиле ниже снимает и защитный минимум по содержимому. Измерено на
+    стенде с 30 машинами: карточка получала 3.9 px при содержимом 44.6 px, scrollHeight
+    равнялся clientHeight (прокрутки не было вовсе), и каждая следующая строка накрывала
+    своим фоном половину надписи предыдущей — ровно снимок владельца.
+    Запрет сжатия возвращает строкам их высоту, а списку — прокрутку. */
+html.ui3-mode .pc-rows > * { flex: 0 0 auto; }
+/*  Карточка в этом виде — тонкая строка: фиксированная высота ячейки ей не принадлежит. */
+html.ui3-mode .pc-rows .printer-card { padding: 0 !important; border-radius: 10px !important;
+  min-height: 0 !important; max-height: none !important; height: auto !important; }
+/*  Предупреждение «модель не задана» в ячейках висит углом; в строке ему место в потоке. */
+html.ui3-mode .pc-rows .pc-nomodel { display: none; }
+html.ui3-mode .pc-row {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+  height: 34px; padding: 0 10px; overflow: hidden; }
+html.ui3-mode .pc-row-dot { width: 9px; height: 9px; border-radius: 999px; flex: 0 0 auto;
+  box-shadow: 0 0 6px currentColor; }
+html.ui3-mode .pc-row-name { flex: 1 1 60px; min-width: 40px;
+  font-size: 12.5px; font-weight: 650; color: var(--fm-text-primary); letter-spacing: .02em; }
+html.ui3-mode .pc-row-warn { flex: 0 0 auto; cursor: pointer; color: var(--fm-warn);
+  font-size: 12px; line-height: 1; }
+/*  2.930: правый блок строки — ТАБЛИЦА с фиксированными колонками. Раньше ширина полей
+    зависела от числа цифр (247 шире 84), и колонки соседних строк разъезжались —
+    видно на снимке владельца с двумя десятками машин. */
+/*  Ширины — в СИМВОЛАХ (ch), а не в точках: владелец выбирает шрифт интерфейса сам, и
+    широкий шрифт раздувал бы колонки в min-content, схлопывая имя в ноль (снимок с
+    широким шрифтом интерфейса). min-width:0 запрещает разрастание, имени гарантирован минимум. */
+html.ui3-mode .pc-row-st { flex: 0 0 9ch; min-width: 0; text-align: right;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .pc-row-t { flex: 0 0 calc(4ch + 18px); min-width: 0;
+  display: inline-flex; align-items: center; overflow: hidden;
+  justify-content: flex-end; gap: 3px; font-size: 11.5px; color: var(--fm-text-muted);
+  font-variant-numeric: tabular-nums; }
+html.ui3-mode .pc-row-t svg { opacity: .55; flex: 0 0 auto; }
+html.ui3-mode .pc-row-pc { flex: 0 0 4ch; min-width: 0; overflow: hidden;
+  text-align: right; font-size: 11.5px;
+  font-weight: 650; color: var(--fm-accent); font-variant-numeric: tabular-nums; }
+html.ui3-mode .pc-row-eta { flex: 0 0 8.5ch; min-width: 0; text-align: right;
+  font-size: 11px; color: var(--fm-text-subtle); font-variant-numeric: tabular-nums;
+  overflow: hidden; white-space: nowrap; }
+/*  Номер выбора принтера (режим печати) в виде «Список» — 2.967, заказ владельца.
+    Было: маленький круг у ЛЕВОГО края, цифра 10.5 — с фермы её почти не видно.
+    Стало: прямоугольник у ПРАВОГО края, цифра 13.5, и он обрезается краем строки —
+    обрезанный вид владельцу нравится, поэтому сохранён, только зеркально.
+
+    Размер У ВСЕХ ОДИН И ТОТ ЖЕ — см. расчёт ниже.
+
+    Значок лежит ВНУТРИ строки последним элементом: обрезает его сама строка (у неё
+    overflow: hidden), а температуры отодвигаются потоком — подгонять отступы не нужно.
+    Прежний значок карточки в этом виде не показывается, чтобы номер не задвоился. */
+html.ui3-mode .pc-rows .pc-pick-num { display: none !important; }
+/*  2.968: размер ОДИН И ТОТ ЖЕ всегда — заказ владельца. Он не подобран на глаз, а посчитан:
+    самое широкое трёхзначное число (999) этим шрифтом занимает 24.25 точки (замерено в самой
+    программе). Плюс поля по 7 точек с каждой стороны — видимая часть 38. Плюс 10 точек, которые
+    уходят за край строки, — вся плашка 48. Так значок не меняется ни от номера, ни от того,
+    сколько принтеров отмечено. */
+html.ui3-mode .pc-row-pick {
+  flex: 0 0 auto; margin-left: 8px; margin-right: -20px; box-sizing: border-box;
+  width: 48px; height: 24px; line-height: 24px; border-radius: 7px; padding: 0 10px 0 0;
+  background: var(--fm-header-orange); color: var(--fm-white);
+  font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; text-align: center;
+  font-variant-numeric: tabular-nums; pointer-events: none; }
+/*  Вид «Ячейки»: значок остаётся в углу карточки (его там ничто не обрезает), но размер и
+    цифра — те же, что в списке. Видимая часть 38: без обрезки лишние 10 не нужны.
+    «Сетка» устроена иначе — см. следующий блок. */
+
+/*  Номер в виде «Сетка» (2.969, заказ владельца, способ Г1 высотой 16).
+    БЫЛО: значок лежал ПОВЕРХ плитки в правом верхнем углу и накрывал собой длинное имя
+    принтера (владелец прислал снимок). СТАЛО: значок встроен в правый НИЖНИЙ угол так, что
+    читается как утолщение рамки, а не наклейка на ней: он вплотную к обоим краям, его
+    внешний угол повторяет скругление плитки (14), внутренний скруглён мягче (8), заливка —
+    тот же оранжевый, что у рамки выделения, и он ложится поверх неё.
+
+    Размеры посчитаны, а не подобраны: плитка 109 x 74, скругление 14, отступы 10 и 12 —
+    всё замерено в самой программе. Ширина 36 держит трёхзначное число (999 занимает 24.25),
+    высота 16 выбрана владельцем из четырёх показанных.
+
+    Содержимое плитки ПОДНИМАЕТСЯ над значком, а не жмётся к нему сбоку: рядом с ним самое
+    длинное состояние («СВОБОДЕН», около 58 точек) на плитке шириной 109 не помещается
+    физически. Поднимаем ровно на высоту значка и только пока плитка отмечена. */
+html.ui3-mode .printer-card.pc-grid .pc-pick-num {
+  box-sizing: border-box; top: auto; left: auto; right: 0; bottom: 0;
+  width: 36px; height: 16px; min-width: 0; padding: 0;
+  border-radius: 8px 0 14px 0; font-size: 12.5px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: none; }
+html.ui3-mode .printer-card.pc-grid.pc-pick-sel .grid-summary { padding-bottom: 16px; }
+html.ui3-mode .printer-card:not(.pc-grid) .pc-pick-num {
+  box-sizing: border-box; width: 38px; height: 24px; line-height: 24px; min-width: 0;
+  border-radius: 7px; padding: 0; font-size: 13.5px; font-weight: 800; letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums; }
+
+/*  ── 21. Вкладка «Задачи»: группы-карточки (2.923) ──────────────────────────────────── */
+/*  Жалоба владельца: «все элементы сливаются». Причина: всё лежало на одной плоскости
+    панели — поиск, фильтры, заголовки групп и строки различались только текстом.
+    Решение в духе сгруппированных списков Apple: у каждой смысловой группы своё тело.
+      * командная карточка сверху: заголовок, сводка, «Открыть»;
+      * поиск — поле с лупой; фильтры — капсулы, активная приподнята светлым;
+      * заголовок группы — плашка светлее строк, с сводкой у правого края;
+      * каждая задача — отдельная карточка; кнопки «−/+» проявляются при наведении;
+      * статус — мягкий чип-капсула без кричащей рамки.
+    Только оформление: разметка общая с 2.0 и не менялась.                              */
+
+/*  21.1 Командная карточка. Пунктир остаётся: полоса — место, куда бросают файл. */
+html.ui3-mode [data-tour="qtdrop"] {
+  background: var(--fm-surface-raised) !important;
+  border: 1px dashed color-mix(in srgb, var(--fm-border-strong) 80%, transparent) !important;
+  padding: 14px 18px !important;
+}
+html.ui3-mode [data-tour="qtdrop"] h2 { letter-spacing: .12em !important; }
+html.ui3-mode [data-tour="qtdrop"] > div:first-child > span:first-of-type {
+  font-size: 15px !important; font-weight: 650 !important; color: var(--fm-text-primary) !important; }
+html.ui3-mode [data-tour="qtdrop"] > div:first-child > span + span {
+  font-size: 12px !important; color: var(--fm-text-subtle) !important; }
+
+/*  21.2 Поиск — поле с лупой, как в системных списках. */
+/*  Специфичность выше общего правила полей из раздела 8 — иначе лупа затирается. */
+html.ui3-mode .ui3-task > input:not([type="checkbox"]):not([type="radio"]) {
+  height: 34px !important; border-radius: 12px !important;
+  background: var(--fm-surface-raised) no-repeat 12px center !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d727c' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='21' y1='21' x2='16.5' y2='16.5'/%3E%3C/svg%3E") !important;
+  background-size: 14px 14px !important;
+  border: 1px solid var(--fm-border) !important;
+  padding-left: 34px !important; font-size: 13px !important;
+}
+
+/*  21.3 Фильтры — капсулы одной высоты; активная приподнята светлым телом, а не рамкой. */
+html.ui3-mode .qtfilters { gap: 6px !important; margin-bottom: 12px !important; }
+html.ui3-mode .qtfilters button {
+  height: 28px; padding: 0 13px !important; border-radius: 999px !important;
+  font-size: 11.5px !important; font-weight: 600 !important; letter-spacing: .02em;
+  border: 1px solid var(--fm-border) !important; background: transparent !important;
+  color: var(--fm-text-subtle) !important;
+}
+html.ui3-mode .qtfilters button:hover { color: var(--fm-text-primary) !important;
+  border-color: var(--fm-border-strong) !important; }
+html.ui3-mode .qtfilters button.text-neon {
+  background: var(--fm-surface-card) !important; color: var(--fm-text-primary) !important;
+  border-color: transparent !important; box-shadow: var(--u3-shadow); }
+html.ui3-mode .qtfilters .qtprob-filter { color: var(--fm-warn) !important;
+  border-color: color-mix(in srgb, var(--fm-warn) 30%, transparent) !important; }
+html.ui3-mode .qtfilters .qtprob-filter.is-on {
+  background: color-mix(in srgb, var(--fm-warn) 14%, transparent) !important;
+  box-shadow: none; }
+html.ui3-mode .qtgrp-lbl { font-size: 10px !important; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; margin-right: 2px; }
+
+/*  21.4 Строка колонок — тихая подпись, не спорящая с группами. */
+html.ui3-mode .pvtbl .pvhead {
+  background: transparent !important; border: 0 !important;
+  color: var(--fm-text-subtle) !important; }
+html.ui3-mode .pvtbl .pvhead .pvc { font-size: 9.5px !important; font-weight: 700 !important;
+  letter-spacing: .1em !important; }
+
+/*  21.5 Заголовок группы — плашка светлее строк: видно, где кончается одна и
+    начинается другая. Сводка группы прижата к правому краю. */
+html.ui3-mode .qtgrp {
+  margin: 14px 0 8px !important; padding: 0 14px !important; min-height: 38px;
+  background: var(--fm-surface-card) !important;
+  border: 1px solid var(--fm-border) !important; border-radius: 12px !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-text-primary) 4%, transparent);
+}
+html.ui3-mode[data-theme="light"] .qtgrp { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-white) 90%, transparent); }
+html.ui3-mode .qtgrp:hover { border-color: var(--fm-border-strong) !important; }
+html.ui3-mode .qtgrp-t { font-size: 13px !important; font-weight: 650 !important;
+  color: var(--fm-text-primary) !important; }
+html.ui3-mode .qtgrp-n { font-size: 11px !important; color: var(--fm-text-subtle) !important; }
+html.ui3-mode .qtgrp-sum { margin-left: auto; font-size: 11px !important;
+  color: var(--fm-text-subtle) !important; font-variant-numeric: tabular-nums; }
+html.ui3-mode .qtgrp-chev { color: var(--fm-text-subtle) !important; }
+
+/*  21.6 Каждая задача — карточка. Раскрытая панель прирастает к своей строке. */
+html.ui3-mode .pvtbl .pvrow.pvpart {
+  background: var(--fm-surface-raised) !important;
+  border: 1px solid var(--fm-border) !important; border-radius: 12px !important;
+  margin-bottom: 6px; padding-top: 6px !important; padding-bottom: 6px !important;
+  transition: background-color .14s ease, border-color .14s ease;
+}
+html.ui3-mode .pvtbl .pvrow.pvpart:hover { background: var(--fm-surface-card) !important;
+  border-color: var(--fm-border-strong) !important; }
+/*  21.6а Раскрытия вниз в 3.0 нет (заказ владельца, 2.924): вся дополнительная
+    информация — в самой строке, панель не показывается ни при каком состоянии. */
+html.ui3-mode .qtpv-panel { display: none !important; }
+html.ui3-mode .qtpv .pvchev { display: none !important; }
+html.ui3-mode .pvtbl .pvpname { font-size: 13px !important; font-weight: 600 !important; }
+html.ui3-mode .pvtbl .pvnote { color: var(--fm-text-subtle) !important; }
+
+/*  21.7 Ход печати — тонкая линия и цифры табличным шрифтом. */
+html.ui3-mode .qtprog-bar { height: 3px !important; background: color-mix(in srgb, var(--fm-text-primary) 8%, transparent) !important; }
+html.ui3-mode[data-theme="light"] .qtprog-bar { background: color-mix(in srgb, var(--fm-text-primary) 10%, transparent) !important; }
+html.ui3-mode .qtprog-done { background: var(--fm-accent) !important; box-shadow: none !important; }
+html.ui3-mode .qtprog-live { background: color-mix(in srgb, var(--fm-accent) 35%, transparent) !important; }
+html.ui3-mode .qtprog-txt { font-variant-numeric: tabular-nums; }
+
+/*  21.8 Числа плана и итога — крупные; кнопки «−/+» проявляются при наведении строки,
+    чтобы в спокойном состоянии на экране были данные, а не органы управления. */
+html.ui3-mode .pvtbl .unified-input { font-size: 14px !important; font-weight: 650 !important;
+  background: transparent !important; border-color: transparent !important; }
+html.ui3-mode .pvtbl .pvrow:hover .unified-input { border-color: var(--fm-border) !important; }
+html.ui3-mode .qtqty-btn { opacity: 0; transition: opacity .12s ease, color .12s ease; }
+html.ui3-mode .pvtbl .pvrow:hover .qtqty-btn,
+html.ui3-mode .qtqty-btn:focus-visible { opacity: 1; }
+
+/*  21.9 Статус — мягкий чип: капсула с тихим телом вместо кричащей рамки. */
+html.ui3-mode .pvtbl .status-badge {
+  border-radius: 999px !important; border-color: transparent !important;
+  font-size: 9.5px !important; letter-spacing: .07em !important;
+  height: 24px !important; line-height: 24px !important;
+}
+
+/*  ── 22. Задачи: всё в строке + большой предпросмотр (2.924) ────────────────────────── */
+/*  Большой предпросмотр по наведению на миниатюру. Механизм общий с принтерами
+    (showThumbPop): клон уезжает в body и не обрезается прокруткой панели. */
+html.ui3-mode .pvprev { cursor: zoom-in; }
+html.ui3-mode .thumb-big.ui3-qtzoom {
+  position: fixed; z-index: 10000; width: 232px; padding: 10px;
+  background: var(--fm-surface-raised); border: 1px solid var(--fm-border);
+  border-radius: 14px; box-shadow: var(--u3-shadow-hi); }
+html.ui3-mode .thumb-big.ui3-qtzoom img { display: block; width: 212px; height: 212px;
+  object-fit: contain; border-radius: 8px; }
+
+/*  2.951: чип деталей и чип заметки живут в блоке значков после имени (.ui3-qtmeta). */
+html.ui3-mode .ui3-qtparts { flex: 0 0 auto; height: 22px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 999px; font-size: 10px; font-weight: 600; color: var(--fm-text-subtle); border: 1px solid var(--fm-border); white-space: nowrap; }
+/*  2.953 (концепт З1): заметка — вторая строка колонки имени, 14 px, внутри тех же 44 px.
+    В покое — курсив тихим цветом; пустая видна подсказкой только при наведении на строку;
+    в правке — то же место, тот же размер, подчёркивание акцентом. */
+html.ui3-mode .ui3-qtnoteline { display: flex; min-width: 0; height: 14px; }
+html.ui3-mode .ui3-qtnote { display: block; width: 100%; min-width: 0; height: 14px; line-height: 14px; font-size: 11px; font-style: italic; color: var(--fm-text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text; background: transparent; border: 0; padding: 0 !important; margin: 0; border-radius: 0; }
+html.ui3-mode span.ui3-qtnote.ph { opacity: 0; transition: opacity var(--u3-fast); }
+html.ui3-mode .pvrow:hover span.ui3-qtnote.ph { opacity: .45; }
+html.ui3-mode span.ui3-qtnote.ro { cursor: default; }
+html.ui3-mode .pvnamecol input.ui3-qtnote:not([type="checkbox"]):not([type="radio"]) { height: 14px; padding: 0 !important; font-size: 11px !important; font-style: normal; line-height: 14px; color: var(--fm-text-primary) !important; background: transparent !important; border: 0 !important; border-bottom: 1px solid var(--fm-accent) !important; border-radius: 0 !important; box-shadow: none !important; outline: none !important; }
+html.ui3-mode .ui3-qtnote::placeholder { color: color-mix(in srgb, var(--fm-text-subtle) 55%, transparent); }
+
+/*  2.951 (выбор владельца, концепты С3 + С5): строка задачи в 3.0 — ОДНА строка 44 px.
+    Колонки: рельса 52 | синхронизация 46 | предпросмотр 42 | имя (не уже 130) | значки (до 86, сжимаются первыми) |
+    «Итог из План» 176 | статус 120. Ширина колонки значков не зависит от содержимого строки —
+    столбцы стоят по одной вертикали во всех строках (заказ владельца, 2.953). «В печати» отдельной колонки нет — число внутри бейджа.
+    Высота задана числом (2.955: 50 px, между именем и заметкой 5, между строками 8 — заказ владельца):
+    что не влезает — в подсказку, строка не растёт.
+    Каждое правило — в одну строку: проверка слоя требует, чтобы строка-селектор начиналась с html.ui3-mode. */
+/*  Бюджет 2.956, замерено: на экране 1280 панели задач достаётся 523 точки. Широкая рельса (52)
+    и своя колонка синхронизации (46) съели весь запас, поэтому на узком экране колонка значков
+    схлопывается в ноль — значки прячутся целиком, как и раньше, а строка НЕ выходит за панель. */
+html.ui3-mode .pvrow.qtpvrow { grid-template-columns: 52px 56px minmax(96px,1fr) minmax(0,96px) 192px 134px 52px; }
+/*  Шапка обязана иметь ТУ ЖЕ коробку, что и строка: у строки рамка 1 px и правое поле 6 px.
+    Иначе на узком экране, где колонка имени упирается в минимум и слака нет, все столбцы шапки
+    уезжают на 5 px относительно строки (замерено на 1280). */
+html.ui3-mode .pvtbl .pvrow.qtpvrow.pvhead { box-sizing: border-box; border: 1px solid transparent; padding: 0 !important; }
+/*  2.960 (снимок владельца): на широком экране элементам было тесно — поля ячеек 4 px и
+    предпросмотр вплотную к рельсе. Поля 8 px, колонка предпросмотра 48 (миниатюра 32 плюс по 8),
+    у капсулы чисел свой запас 16 в колонке, у статуса 126. На узком экране остаётся прежняя
+    плотность: там дорога каждая точка. */
+html.ui3-mode .pvrow.qtpvrow > .pvc { padding-left: 8px; padding-right: 8px; }
+/*  Бейдж статуса растянут на всю ячейку, поэтому зазор до полосы синхронизации задаётся
+    полем самой ячейки, а не её шириной. */
+html.ui3-mode .pvrow.qtpvrow > .pvc[data-help="qt-status"] { padding-right: 18px; }
+html.ui3-mode .pvtbl .pvrow.qtpvrow.pvpart { position: relative; height: 50px; min-height: 0; margin-bottom: 8px; padding: 0 !important; overflow: hidden; }
+html.ui3-mode .qtpv .pvhead .pvhbtns { display: none !important; }
+html.ui3-mode .qtpv .pvdot { display: none !important; }
+html.ui3-mode .qtpv .pvnamecol { min-height: 0; justify-content: center; gap: 5px; }
+html.ui3-mode .qtpv .pvnameline { height: 16px; }
+html.ui3-mode .qtpv .pvpname { line-height: 16px; }
+html.ui3-mode .ui3-qthead-ic { width: 13px; height: 13px; color: var(--fm-text-subtle); }
+/*  Рельса: кнопка на всю высоту строки у левого края карточки. Цвет = статус задачи. */
+html.ui3-mode .ui3-qtgocell { position: relative; align-self: stretch; display: flex; align-items: stretch; padding: 0 !important; }
+/*  2.961: беда — треугольник в верхнем правом углу кнопки принтера. Без круга и обводки: так он
+    крупнее и читается сразу; тень отделяет его от цветной полосы. Размер 14 и угол подобраны так,
+    чтобы он не касался значка принтера (полоса 52, значок 19 по центру — треугольник правее). */
+html.ui3-mode .ui3-qtflag { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; z-index: 2; pointer-events: none; filter: drop-shadow(0 0 2px rgba(0,0,0,.55)); color: var(--fm-warn); }
+html.ui3-mode .ui3-qtflag svg { width: 14px; height: 14px; }
+html.ui3-mode .ui3-qtflag.lvl-bad { color: var(--fm-danger); }
+html.ui3-mode .ui3-qtrail { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 52px; min-width: 52px; padding: 0 !important; margin: 0; border: 0; border-right: 1px solid var(--fm-border); border-radius: 0; line-height: 0; color: var(--fm-accent); background: color-mix(in srgb, var(--fm-accent) 18%, var(--fm-surface-raised)); transition: background var(--u3-fast), color var(--u3-fast), filter var(--u3-fast); }
+html.ui3-mode .ui3-qtrail svg { width: 19px; height: 19px; }
+html.ui3-mode .ui3-qtrail.st-done { color: var(--fm-success); background: color-mix(in srgb, var(--fm-success) 20%, var(--fm-surface-raised)); }
+html.ui3-mode .ui3-qtrail.st-wait { color: var(--fm-warn); background: color-mix(in srgb, var(--fm-warn) 18%, var(--fm-surface-raised)); }
+html.ui3-mode .ui3-qtrail.st-bad { color: var(--fm-danger); background: color-mix(in srgb, var(--fm-danger) 18%, var(--fm-surface-raised)); }
+html.ui3-mode button.ui3-qtrail:hover { filter: brightness(1.3); }
+html.ui3-mode .ui3-qtrail:disabled { opacity: .45; cursor: default; filter: none; }
+html.ui3-mode .ui3-qtrail.none { cursor: default; }
+html.ui3-mode .ui3-qtrail.go { color: #06281b; background: var(--fm-success); animation: ui3-qtrail-glow 1.4s ease-in-out infinite; }
+@keyframes ui3-qtrail-glow { 0%, 100% { box-shadow: inset 0 0 0 0 color-mix(in srgb, #fff 0%, transparent); } 50% { box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 45%, transparent); } }
+/*  15.09.2026 (заказ владельца): файл уже отправляется — рельса синяя и мягко «дышит», значок —
+    стрелка отправки. Видно с первого взгляда, какие строки уже пошли, и повторно их не запускают. */
+html.ui3-mode .ui3-qtrail.st-send { color: var(--fm-accent); background: color-mix(in srgb, var(--fm-accent) 22%, var(--fm-surface-raised)); animation: ui3-qtrail-send 1.3s ease-in-out infinite; }
+@keyframes ui3-qtrail-send { 0%, 100% { box-shadow: inset 0 0 0 0 transparent; } 50% { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--fm-accent) 55%, transparent); } }
+/*  Блок значков: сжимается раньше имени. Чип виден целиком или не виден: лишние переносятся
+    на вторую строку, которая лежит за пределами высоты блока (row-gap больше высоты). */
+html.ui3-mode .ui3-qtmeta { display: flex; flex-wrap: wrap; align-items: center; align-content: flex-start; justify-content: center; gap: 40px 6px; height: 22px; padding: 0 !important; min-width: 0; overflow: hidden; }
+/*  2.957 (макет Д3): синхронизация — полоса у правого края, зеркальная рельсе. Кнопка и есть полоса:
+    во всю высоту строки, 52 px, значок 19 px. Включена — синяя, выключена — тихая серая;
+    у задачи без проекта кнопки нет вовсе, и на её месте остаётся фон строки. */
+html.ui3-mode .ui3-qtsync { align-self: stretch; display: flex; align-items: stretch; padding: 0 !important; }
+html.ui3-mode .ui3-qtsync .qtsync { flex: 1 1 auto; width: 52px; height: auto; min-width: 52px; margin: 0; padding: 0 !important; border: 0; border-left: 1px solid var(--fm-border); border-radius: 0; background: color-mix(in srgb, var(--fm-text-primary) 6%, var(--fm-surface-raised)); color: var(--fm-text-subtle); transition: background var(--u3-fast), color var(--u3-fast), filter var(--u3-fast); }
+html.ui3-mode .ui3-qtsync .qtsync.on { background: color-mix(in srgb, var(--fm-accent) 18%, var(--fm-surface-raised)); color: var(--fm-accent); }
+html.ui3-mode .ui3-qtsync .qtsync:hover:not(:disabled) { filter: brightness(1.3); }
+html.ui3-mode .ui3-qtsync .qtsync:focus { outline: none !important; }
+html.ui3-mode .ui3-qtsync .qtsync:focus-visible { box-shadow: inset 0 0 0 2px var(--fm-text-primary) !important; }
+html.ui3-mode .ui3-qtsync .qtsync-ic { width: 19px; height: 19px; }
+/*  Нулевой первый элемент: первый чип в ряду перенестись не может и обрезался бы; с ним любой
+    не поместившийся чип уходит на скрытую строку целиком. Отрицательный отступ гасит gap после него. */
+html.ui3-mode .ui3-qtmeta-0 { flex: 0 0 0; width: 0; height: 0; margin-right: -6px; }
+/*  «Итог из План»: одна ячейка-капсула, кнопки −/+ проявляются при наведении строки (правило 21.8). */
+/*  2.954 (макет, выбор владельца — «с капсулой»): ячейка «Итог из План» — сетка из трёх столбцов
+    внутри капсулы 176 px: «Итог» | 16 px «из» | «План». Шапка делится теми же столбцами, подпись
+    стоит по центру своего. Поле 56 × 22 постоянной ширины: до шести знаков — 14 px, семь-восемь —
+    12 px, девять — 10,5 px. Кнопки «−/+» по бокам поля, видны при наведении (правило 21.8). */
+html.ui3-mode .ui3-qtpair { display: grid; grid-template-columns: 1fr 16px 1fr; align-items: center; justify-self: center; width: 176px; height: 32px; margin: 0; padding: 0 !important; border-radius: 9px; background: var(--fm-surface-card); border: 1px solid var(--fm-border); }
+html.ui3-mode .ui3-qtpair .qtqty { display: grid; grid-template-columns: 11px 56px 11px; align-items: center; justify-content: center; padding: 0 !important; gap: 0; min-width: 0; }
+html.ui3-mode .ui3-qtpair .qtpv-qty { width: 56px !important; height: 22px !important; padding: 0 !important; font-variant-numeric: tabular-nums; line-height: 20px !important; }
+html.ui3-mode .ui3-qtpair .qtqty-btn { width: 11px; height: 18px; }
+/*  От семи знаков кнопки «−/+» уходят (прибавить единицу к миллиону бессмысленно), и поле
+    занимает всю свою половину капсулы — девять знаков помещаются целиком на любом экране. */
+html.ui3-mode .ui3-qtpair .ui3-d7, html.ui3-mode .ui3-qtpair .ui3-d8, html.ui3-mode .ui3-qtpair .ui3-d9 { grid-template-columns: 1fr; }
+html.ui3-mode .ui3-qtpair .ui3-d7 .qtqty-btn, html.ui3-mode .ui3-qtpair .ui3-d8 .qtqty-btn, html.ui3-mode .ui3-qtpair .ui3-d9 .qtqty-btn { display: none; }
+html.ui3-mode .ui3-qtpair .ui3-d7 .qtpv-qty, html.ui3-mode .ui3-qtpair .ui3-d8 .qtpv-qty { width: 100% !important; font-size: 12px !important; }
+html.ui3-mode .ui3-qtpair .ui3-d9 .qtpv-qty { width: 100% !important; font-size: 10.5px !important; letter-spacing: -.02em; }
+html.ui3-mode .ui3-qtpair-of { font-size: 11px; color: var(--fm-text-subtle); text-align: center; padding: 0; }
+html.ui3-mode .ui3-qtpair-h { display: grid; grid-template-columns: 1fr 16px 1fr; justify-self: center; width: 176px; padding: 0 !important; margin: 0; }
+html.ui3-mode .ui3-qtpair-h > * { text-align: center; justify-self: center; }
+html.ui3-mode .ui3-qtpair-h .pvsort { cursor: pointer; }
+/*  Прогресс — линия по нижнему краю карточки, от рельсы до правого края; цифры в подсказке. */
+html.ui3-mode .qtpv .qtprog { position: absolute; left: 52px; right: 52px; bottom: 0; height: 2px; margin: 0; gap: 0; }
+html.ui3-mode .qtpv .qtprog-bar { flex: 1 1 auto; height: 2px !important; border-radius: 0; background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent) !important; }
+html.ui3-mode .qtpv .qtprog-txt { display: none; }
+/*  Число печатающихся — внутри бейджа статуса. */
+html.ui3-mode .pvtbl .status-badge .sb-n { display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 5px; line-height: 16px; font-size: 10px; background: color-mix(in srgb, currentColor 18%, transparent); font-variant-numeric: tabular-nums; }
+
+/*  ── 2.961: строка детали в проектах повторяет строку задачи (заказ владельца) ─────────────
+    Те же части и те же размеры, что в «Задачах», плюс столбец «Брак» между числами и статусом.
+    Колонки: рельса 52 | предпросмотр 56 | имя (не уже 96) | значки (до 96) | «Итог из План» 192 |
+    Брак 92 | статус 134 | синхронизация 52. Стрелку раскрытия НЕ прячем: у детали, в отличие от
+    задачи, панель внизу осталась — в ней плиты и варианты, и о ней надо чем-то сообщать. */
+html.ui3-mode .pvtbl.ui3-pv .pvrow { grid-template-columns: 52px 56px minmax(96px,1fr) minmax(0,96px) 184px 72px 124px 52px; }
+/*  Правка проекта (карандаш) обязана стоять в ТОЙ ЖЕ сетке, что обычный вид: иначе при входе
+    в правку всё съезжает — жалоба владельца 2.931. Поэтому те же столбцы и здесь. */
+html.ui3-mode .pvtbl.p2edit .pvrow { grid-template-columns: 52px 56px minmax(96px,1fr) minmax(0,96px) 184px 72px 124px 52px; }
+html.ui3-mode .pvtbl.p2edit .pvrow > .pvc { padding-left: 8px; padding-right: 8px; }
+html.ui3-mode .pvtbl.p2edit .pvrow.pvpart { position: relative; height: 50px; min-height: 0; margin-bottom: 8px; padding: 0 !important; }
+html.ui3-mode .pvtbl.p2edit .pvrow.pvhead { box-sizing: border-box; border: 1px solid transparent; padding: 0 !important; }
+html.ui3-mode .pvtbl.p2edit .ui3-qtgocell { position: relative; align-self: stretch; display: flex; align-items: stretch; padding: 0 !important; }
+
+html.ui3-mode .pvtbl.ui3-pv .pvrow > .pvc { padding-left: 8px; padding-right: 8px; }
+html.ui3-mode .pvtbl.ui3-pv .pvrow > .pvc[data-help="col-status"] { padding-right: 18px; }
+html.ui3-mode .pvtbl.ui3-pv .pvrow.pvpart { position: relative; height: 50px; min-height: 0; margin-bottom: 8px; padding: 0 !important; overflow: hidden; }
+html.ui3-mode .pvtbl.ui3-pv .pvrow.pvhead { box-sizing: border-box; border: 1px solid transparent; padding: 0 !important; }
+html.ui3-mode .pvtbl.ui3-pv .pvnamecol { min-height: 0; justify-content: center; gap: 5px; }
+html.ui3-mode .pvtbl.ui3-pv .pvnameline { height: 16px; }
+html.ui3-mode .pvtbl.ui3-pv .pvpname { line-height: 16px; }
+html.ui3-mode .pvtbl.ui3-pv .pvdot { display: none !important; }
+/*  2.962: строка детали больше не раскрывается по щелчку (заказ владельца — «как в задачах»),
+    поэтому стрелка-обещание убрана: она обещала бы то, чего нет. */
+html.ui3-mode .pvtbl.ui3-pv .pvchev { display: none !important; }
+html.ui3-mode .pvtbl.ui3-pv .pvpanel { display: none !important; }
+html.ui3-mode .pvtbl.ui3-pv .pvhead .pvhbtns { display: none !important; }
+html.ui3-mode .pvtbl.ui3-pv .qtprog { position: absolute; left: 52px; right: 52px; bottom: 0; height: 2px; margin: 0; gap: 0; }
+html.ui3-mode .pvtbl.ui3-pv .qtprog-bar { flex: 1 1 auto; height: 2px !important; border-radius: 0; background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent) !important; }
+html.ui3-mode .pvtbl.ui3-pv .pvpanel { margin-top: -6px; }
+html.ui3-mode .pvtbl.ui3-pv .rw-chip { margin: 0; }
+
+/*  2.957: меры для узких экранов. Замерено: на окне 1280 панели задач достаётся 523 точки, и с двумя
+    полосами по 52 имени файла осталось бы 91. Поэтому там предпросмотр в задачах не показывается
+    (большой предпросмотр и так открывается наведением на строку), а поля чисел 46 вместо 56.
+    Порог по ширине ОКНА: правила видят неувеличенную ширину, 1280 -> 1256, 1366 при 125 % -> 1343. */
+@media (max-width: 1300px) {
+html.ui3-mode .pvrow.qtpvrow { grid-template-columns: 52px minmax(96px,1fr) minmax(0,40px) 152px 108px 52px; }
+html.ui3-mode .pvrow.qtpvrow > .pvc { padding-left: 4px; padding-right: 4px; }
+html.ui3-mode .pvtbl.ui3-pv .pvrow, html.ui3-mode .pvtbl.p2edit .pvrow { grid-template-columns: 52px minmax(96px,1fr) minmax(0,40px) 152px 84px 108px 52px; }
+html.ui3-mode .pvtbl.ui3-pv .pvrow > .pvc { padding-left: 4px; padding-right: 4px; }
+html.ui3-mode .pvtbl.ui3-pv .pvprev, html.ui3-mode .pvtbl.p2edit .pvprev { display: none !important; }
+html.ui3-mode .qtpv .pvprev, html.ui3-mode .qtpv .pvhead .qtprev-h { display: none !important; }
+html.ui3-mode .ui3-qtpair { width: 152px; }
+html.ui3-mode .ui3-qtpair .qtpv-qty { width: 46px !important; }
+html.ui3-mode .ui3-qtpair-h { grid-template-columns: 1fr 16px 1fr; width: 152px; }
+html.ui3-mode .ui3-qtpair .ui3-d6 .qtpv-qty { font-size: 12px !important; }
+}
+
+/*  --- 25. Nastrojki v duhe Apple (2.930, zakaz vladeltsa) --- */
+/*  Экран настроек собран как системные настройки: слева тихая колонка разделов с мягкой
+    активной капсулой, справа — карточки-группы на спокойном фоне, строки внутри разделены
+    волосяными линиями. Цвета и поля — токены слоя, никакой новой логики. */
+html.ui3-mode .fm-settings-workspace {
+  background: var(--fm-surface-base) !important;
+  border: 1px solid var(--fm-border) !important;
+  border-radius: var(--u3-r-panel) !important;
+  box-shadow: var(--u3-shadow) !important; }
+html.ui3-mode .fm-settings-workspace .fm-set-title {
+  font-size: 14px !important; font-weight: 650 !important; color: var(--fm-text-primary) !important;
+  padding: 14px 20px !important; border-bottom: 1px solid var(--fm-border) !important; }
+html.ui3-mode .fm-set-x { border-radius: 999px !important; color: var(--fm-text-subtle) !important; }
+html.ui3-mode .fm-set-x:hover { color: var(--fm-text-primary) !important; background: var(--u3-hover) !important; }
+html.ui3-mode .fm-set-nav {
+  width: 200px !important; padding: 14px 12px !important; gap: 2px !important;
+  background: transparent !important; border-right: 1px solid var(--fm-border) !important; }
+html.ui3-mode .fm-set-nav-item {
+  padding: 8px 12px !important; border-radius: 10px !important;
+  font-size: 13px !important; font-weight: 600 !important;
+  color: var(--fm-text-muted) !important; transition: background var(--u3-fast), color var(--u3-fast); }
+html.ui3-mode .fm-set-nav-item:hover { background: var(--u3-hover) !important;
+  color: var(--fm-text-primary) !important; }
+/*  Активный раздел — мягкая светлая капсула, а не заливка акцентом во всю строку. */
+html.ui3-mode .fm-set-nav-item.active {
+  background: var(--fm-surface-card) !important; color: var(--fm-text-primary) !important;
+  box-shadow: var(--u3-shadow) !important; }
+html.ui3-mode .fm-settings-workspace .fm-set-scroll { padding: 18px 22px 22px !important;
+  gap: 14px !important; }
+html.ui3-mode .fm-set-head-t { font-size: 16px !important; font-weight: 700 !important;
+  color: var(--fm-text-primary) !important; letter-spacing: -.01em; }
+html.ui3-mode .fm-set-head-d { font-size: 12px !important; color: var(--fm-text-subtle) !important; }
+html.ui3-mode .fm-settings-workspace .fm-set-group {
+  background: var(--fm-surface-raised) !important; border: 1px solid var(--fm-border) !important;
+  border-radius: 14px !important; padding: 14px 16px 15px !important; gap: 8px !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode[data-theme="light"] .fm-settings-workspace .fm-set-group {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-white) 85%, transparent); }
+html.ui3-mode .fm-set-sec-h { font-size: 13px !important; font-weight: 650 !important;
+  color: var(--fm-text-primary) !important; }
+html.ui3-mode .fm-set-sec-d { font-size: 11.5px !important; color: var(--fm-text-subtle) !important;
+  line-height: 1.45 !important; }
+/*  Строки внутри группы разделены волосяной линией — как списки системных настроек. */
+html.ui3-mode .fm-set-line + .fm-set-line { border-top: 1px solid var(--fm-border);
+  padding-top: 9px; margin-top: 3px; }
+html.ui3-mode .fm-set-item, html.ui3-mode .fm-set-toggle {
+  border-radius: 10px !important; border: 1px solid var(--fm-border) !important;
+  background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent) !important; font-size: 13px !important;
+  color: var(--fm-text-muted) !important; }
+html.ui3-mode .fm-set-item:hover, html.ui3-mode .fm-set-toggle:hover {
+  border-color: var(--fm-border-strong) !important; color: var(--fm-text-primary) !important; }
+
+/*  Кольцо фокуса круглой кнопки — по её форме, без квадратного ободка (снимок владельца). */
+html.ui3-mode .ui3-qtrail:focus { outline: none !important; }
+html.ui3-mode .ui3-qtrail:focus-visible { box-shadow: inset 0 0 0 2px var(--fm-text-primary) !important; }
+
+/*  --- 26. Detali PROEKTA — te zhe kartochki, chto i zadachi (2.931) --- */
+/*  Снимок владельца: раскрытый проект остался в прежнем табличном виде. Сами правила
+    карточек теперь общие (.pvtbl), здесь — только то, что есть лишь у проектов. */
+/*  Раскрытая панель детали прирастает к своей строке-карточке, как одно целое. */
+html.ui3-mode .pvtbl .pvrow.pvpart:has(+ .pvpanel) {
+  border-radius: 12px 12px 0 0 !important; margin-bottom: 0; }
+html.ui3-mode .pvtbl .pvpanel {
+  background: var(--fm-surface-raised) !important; border: 1px solid var(--fm-border) !important;
+  border-top: 0 !important; border-radius: 0 0 12px 12px !important;
+  margin: 0 0 6px !important; }
+/*  Кружок «в переработку» (колонка DEFECT) — тихая круглая кнопка в духе слоя. */
+html.ui3-mode .rw-chip {
+  border-radius: 999px !important; border: 1px solid var(--fm-border) !important;
+  background: transparent !important; color: var(--fm-text-subtle) !important;
+  transition: color var(--u3-fast), border-color var(--u3-fast); }
+html.ui3-mode .rw-chip:hover { color: var(--fm-warn) !important;
+  border-color: color-mix(in srgb, var(--fm-warn) 40%, transparent) !important; }
+
+/*  --- 27. Pravka detalej proekta na setke spiska (2.934) --- */
+/*  Заказ владельца: вход в правку не должен сдвигать список. Таблица правки теперь тот же
+    .pvtbl с теми же семью колонками, поэтому здесь — только органы правки и резерв места,
+    чтобы высота строк совпадала в обоих режимах. */
+/*  Поле заметки живёт ТАМ ЖЕ, где заметка показывается вне правки (под именем). */
+/*  Специфичность выше общего правила полей раздела 8 — иначе у заметки остаётся рамка. */
+html.ui3-mode .p2edit input.p2ed-note:not([type="checkbox"]):not([type="radio"]) {
+  display: block; width: 100%; max-width: 420px; height: 20px; margin-top: 1px;
+  padding: 0 6px 0 0 !important; font-size: 11.5px !important; font-style: italic;
+  color: var(--fm-text-subtle) !important; background: transparent !important;
+  border: 1px solid transparent !important; border-radius: 6px !important; }
+html.ui3-mode .p2edit input.p2ed-note:hover { border-color: var(--fm-border) !important;
+  padding-left: 6px !important; }
+html.ui3-mode .p2edit input.p2ed-note:focus { border-color: var(--fm-accent) !important;
+  padding-left: 6px !important; font-style: normal; color: var(--fm-text-primary) !important;
+  box-shadow: 0 0 0 3px var(--u3-accent-soft) !important; }
+/*  Чтобы высота строки НЕ менялась при входе в правку, место под заметку зарезервировано
+    и вне правки: у детали без заметки строка всё равно держит эту высоту. */
+html.ui3-mode .pvtbl .pvnamecol { min-height: 38px; justify-content: center; }
+html.ui3-mode .qtpv .pvnamecol { min-height: 0; }
+/*  Распорка вместо стрелки раскрытия: вне правки стрелка есть, в правке её нет —
+    без распорки имя детали уезжало влево (снимок владельца). */
+html.ui3-mode .p2edit .p2ed-chevgap { visibility: hidden; }
+
+/*  Миниатюра детали занимает колонку превью — то же место, что и превью вне правки. */
+html.ui3-mode .p2edit .p2ed-thumb { width: 34px !important; height: 34px !important;
+  border-radius: 8px !important; margin: 0 auto; }
+/*  Поля количеств вписаны в свои колонки и не расталкивают соседей. */
+html.ui3-mode .p2edit .p2qty { width: 100%; max-width: 66px; height: 26px;
+  font-size: 13px !important; }
+/*  Свободные колонки отданы органам правки: брак — счётчиком, удаление — круглой кнопкой. */
+html.ui3-mode .p2ed-rw { font-size: 11px; color: var(--fm-warn);
+  font-variant-numeric: tabular-nums; }
+html.ui3-mode .p2ed-del {
+  display: inline-flex; align-items: center;
+  justify-content: center; width: 28px; height: 28px; border-radius: 999px;
+  color: var(--fm-text-subtle); background: transparent; border: 1px solid var(--fm-border);
+  transition: color var(--u3-fast), background var(--u3-fast), border-color var(--u3-fast); }
+html.ui3-mode .p2ed-del:hover { color: var(--fm-danger);
+  background: color-mix(in srgb, var(--fm-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--fm-danger) 40%, transparent); }
+
+/* ── 26. Экран «Филамент»: где какая катушка и что кончается (2.965) ────────────────────
+   Одна таблица на всю ферму. Строка слота — та же сетка у всех принтеров, поэтому глаз
+   идёт по столбцам сверху вниз, а не заново по каждой карточке. */
+html.ui3-mode .ui3-fil { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+html.ui3-mode .ui3-fil-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+html.ui3-mode .ui3-fil-sp { flex: 1 1 auto; }
+html.ui3-mode .ui3-fil-sum { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-fil-sum b { color: var(--fm-text-primary); font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; margin-right: 4px; }
+html.ui3-mode .ui3-fil-sum .warn b { color: var(--fm-warn); }
+html.ui3-mode .ui3-fil-sum .dim b { color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-fil-th { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--fm-text-muted); white-space: nowrap; }
+html.ui3-mode .ui3-fil-th input { width: 62px; height: 30px; text-align: center; font-variant-numeric: tabular-nums; padding: 0 8px !important; }
+html.ui3-mode .ui3-fil-empty { padding: 18px; border: 1px dashed var(--fm-border); border-radius: var(--u3-r-panel); color: var(--fm-text-subtle); font-size: 12.5px; line-height: 1.5; }
+html.ui3-mode .ui3-fil-note { font-size: 11.5px; line-height: 1.5; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-fil-list { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+html.ui3-mode .ui3-fil-pr { background: var(--fm-surface-card); border: 1px solid var(--fm-border); border-radius: var(--u3-r-card); overflow: hidden; min-width: 0; }
+html.ui3-mode .ui3-fil-ph { display: flex; align-items: baseline; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--fm-border); cursor: pointer; min-width: 0; }
+html.ui3-mode .ui3-fil-ph:hover { background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .ui3-fil-ph .nm { font-size: 14px; font-weight: 650; color: var(--fm-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .ui3-fil-ph .md { font-size: 12px; color: var(--fm-text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+html.ui3-mode .ui3-fil-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; align-self: center; background: var(--fm-success); }
+html.ui3-mode .ui3-fil-dot.run { background: var(--fm-accent); }
+html.ui3-mode .ui3-fil-dot.off { background: var(--fm-text-subtle); }
+html.ui3-mode .ui3-fil-slots { display: flex; flex-direction: column; }
+html.ui3-mode .ui3-fil-row { display: grid; grid-template-columns: 96px 18px 84px minmax(0, 1fr) 160px 120px; align-items: center; gap: 12px; padding: 8px 14px; border-top: 1px solid var(--fm-border); font-size: 12.5px; color: var(--fm-text-muted); min-width: 0; }
+html.ui3-mode .ui3-fil-row:first-child { border-top: 0; }
+html.ui3-mode .ui3-fil-row .sl { font-weight: 600; color: var(--fm-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .ui3-fil-row .sw { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--fm-border-strong); }
+html.ui3-mode .ui3-fil-row .sw.none { background: repeating-linear-gradient(45deg, var(--fm-text-subtle) 0 2px, transparent 2px 5px); opacity: .5; }
+html.ui3-mode .ui3-fil-row .mt { font-weight: 600; color: var(--fm-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .ui3-fil-row .cl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+html.ui3-mode .ui3-fil-row .rm { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .ui3-fil-row .rm b { color: var(--fm-text-primary); font-size: 14px; font-weight: 650; }
+html.ui3-mode .ui3-fil-row .rm i { font-style: normal; color: var(--fm-text-subtle); }
+html.ui3-mode .ui3-fil-row .rm em { font-style: normal; color: var(--fm-text-subtle); font-size: 11.5px; }
+html.ui3-mode .ui3-fil-row .bar { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--fm-text-primary) 8%, transparent); overflow: hidden; }
+html.ui3-mode .ui3-fil-row .bar > i { display: block; height: 100%; background: var(--fm-success); border-radius: 3px; }
+html.ui3-mode .ui3-fil-row.empty { opacity: .55; }
+html.ui3-mode .ui3-fil-row.low { background: color-mix(in srgb, var(--fm-warn) 10%, transparent); }
+html.ui3-mode .ui3-fil-row.low .rm b { color: var(--fm-warn); }
+html.ui3-mode .ui3-fil-row.low .bar > i { background: var(--fm-warn); }
+/*  Узкая правая половина (ноутбук 1280): подпись цвета и полоса уходят — остаётся то,
+    ради чего экран открывают: слот, материал и остаток. */
+@media (max-width: 1500px) {
+  html.ui3-mode .ui3-fil-row { grid-template-columns: 88px 18px 76px minmax(0, 1fr) 150px; }
+  html.ui3-mode .ui3-fil-row .bar { display: none; }
+}
+@media (max-width: 1200px) {
+  html.ui3-mode .ui3-fil-row { grid-template-columns: 80px 18px minmax(0, 1fr) 140px; }
+  html.ui3-mode .ui3-fil-row .cl { display: none; }
+}
+html.ui3-mode .ui3-rtabs-n.warn { color: var(--fm-warn); }
+/*  На вкладке «Филамент» остальные разделы правой половины не показываются. Скрываем
+    по классу раздела, как это делают вкладки «Проекты» и «Задачи»: сами разделы лежат
+    внутри обёртки display:contents, и выбор «прямой ребёнок» до них не достаёт. */
+html.ui3-mode.ui3-right-filament .ui3-proj,
+html.ui3-mode.ui3-right-filament .ui3-task { display: none !important; }
+html.ui3-mode.ui3-right-filament .projects-pane > section:not(.ui3-fil):not(.ui3-pp) { display: none !important; }
+
+/*  ── 27. Вкладка «Задачи»: прокручивается СПИСОК, а не вся половина (2.974) ─────────────── */
+/*  Заказ владельца: ряд вкладок, карточка «Задачи», поиск и фильтры обязаны стоять на месте,
+    как шапка таблицы. Раньше прокручивалась вся правая половина целиком, и при длинном списке
+    верх уезжал вместе с ним — приходилось возвращаться наверх, чтобы сменить фильтр.
+    Как устроено: половина становится колонкой без своей прокрутки, обёртка задач забирает
+    остаток высоты, а прокрутка живёт внутри — на самом списке. min-height:0 обязателен:
+    без него flex-элемент не даёт себя сжать и прокрутка уезжает наружу. */
+/*  2.977 (R-096): display БЕЗ !important. Половину прячет v-show, записывая display:none
+    прямо в элемент; !important перебивал эту запись, и при открытом окне «Файлы принтеров»
+    половина оставалась видимой, сжатой до полоски — в ней и просвечивали кнопки пульта. */
+html.ui3-mode.ui3-right-tasks .projects-pane {
+  display: flex; flex-direction: column; overflow: hidden !important; }
+/*  Обёртка .ui3-rest несёт класс contents, но такого правила в наборе стилей программы нет —
+    замерено: элемент показывается обычным блоком. Значит, именно он и есть элемент колонки,
+    и высоту делить надо ему. Здесь НЕЛЬЗЯ ставить !important на display: скрывает эту обёртку
+    v-show, а он пишет display:none прямо в элемент, и !important его перебил бы. */
+html.ui3-mode.ui3-right-tasks .projects-pane > .ui3-rest {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+html.ui3-mode.ui3-right-tasks .ui3-taskwrap {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+html.ui3-mode.ui3-right-tasks .ui3-taskwrap > .qt-panel {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/*  ── 28. Настройки: закреплённый ряд разделов без щели под баром (2.974) ────────────────── */
+/*  Владелец видел под верхним баром полосу, сквозь которую проезжали карточки настроек.
+    Причина та же, что и в оформлении 2.0 (там это уже исправлено, см. app.css): у области
+    прокрутки был верхний отступ, а закреплённый элемент не может выйти за свою коробку —
+    и вставал на высоту отступа ниже верха. Отступ переносим на заголовок раздела: заголовок
+    есть у КАЖДОЙ вкладки настроек, поэтому вид не меняется ни на одной, а щель исчезает всюду. */
+html.ui3-mode .fm-settings-workspace .fm-set-scroll { padding-top: 0 !important; }
+html.ui3-mode .fm-settings-workspace .fm-set-scroll > .fm-set-head { padding-top: 18px !important; }
+html.ui3-mode .fm-set-mini { background: var(--fm-surface-deep) !important; }
+
+/*  ── 29. Вкладка «Проекты»: прокручивается СПИСОК, а не вся половина (2.975) ───────────── */
+/*  Устроено ровно так же, как в «Задачах» (см. 27): половина — колонка без своей прокрутки,
+    ряд вкладок, строка с «+ Новый проект» и «Печатать весь проект» и строка поиска стоят,
+    а прокрутка живёт на сетке карточек проектов. min-height:0 обязателен: без него элемент
+    колонки не даёт себя сжать, и прокрутка уезжает наружу. */
+html.ui3-mode.ui3-right-projects .projects-pane {
+  display: flex; flex-direction: column; overflow: hidden !important; }
+html.ui3-mode.ui3-right-projects .projects-pane > .ui3-rest {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+html.ui3-mode.ui3-right-projects .projects-pane > .ui3-rest > section {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; margin-bottom: 0; }
+html.ui3-mode.ui3-right-projects .projects-pane > .ui3-rest > section > .plan-grid-cols {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; align-content: start; margin-bottom: 0 !important; }
+/*  2.976: РАСКРЫТЫЙ проект — тоже свой прокручиваемый список. Без этого правила при раскрытом
+    проекте половина (overflow: hidden) не прокручивалась вовсе — владелец не мог дойти до нижних
+    деталей. Нижние отступы у сетки и у раскрытого проекта сняты, а пустая обёртка задач спрятана:
+    все трое опускали нижний край списка выше нижнего края подсказок. */
+html.ui3-mode.ui3-right-projects .projects-pane > .ui3-rest > section > .glass-panel.ui3-proj {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  overflow: hidden !important; margin-bottom: 0 !important; }
+/*  Шапка раскрытого проекта (имя, «Печатать весь проект», свернуть) стоит на месте — заказ
+    владельца; прокручивается содержимое под ней. */
+html.ui3-mode.ui3-right-projects .projects-pane > .ui3-rest > section > .glass-panel.ui3-proj > .p-2 {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+html.ui3-mode.ui3-right-projects .projects-pane > .ui3-rest > .ui3-taskwrap { display: none !important; }
+
+/*  Нижний край правой половины равняется по нижнему краю подсказок: высоту задаёт app.js
+    (rightColH), а собственный нижний отступ половины здесь снимается — иначе он опустил бы
+    видимый край ниже подсказок ровно на свою величину. */
+html.ui3-mode.ui3-right-tasks .projects-pane,
+html.ui3-mode.ui3-right-projects .projects-pane { padding-bottom: 0 !important; }
+
+/*  ── 30. Кнопка «где лежит файл» у задачи и детали (2.977, R-097) ────────────────────── */
+/*  2.981 (R-105, заказ владельца): кнопка стоит ПЕРЕД именем файла и детали, а не после —
+    отступ поэтому справа, а не слева. */
+html.ui3-mode .ui3-reveal { display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; margin-right: 6px; flex: 0 0 auto; border: 0; border-radius: 6px;
+  background: transparent; color: var(--fm-text-subtle); cursor: pointer; vertical-align: middle; }
+html.ui3-mode .ui3-reveal svg { width: 13px; height: 13px; }
+html.ui3-mode .ui3-reveal:hover { color: var(--fm-text-primary); background: var(--u3-hover); }
+
+/*  ── 31. Большие окна вровень с колонкой принтеров и подсказками (2.977, R-096) ──────── */
+/*  Окно файлов принтеров (а с ним настройки, отчёты и диагностика) начинается там же, где
+    область «Принтеры» слева, и кончается там же, где «Подсказки». Высоту даёт app.js
+    переменной --u3-right-h — той же, по которой стоят проекты и задачи. */
+html.ui3-mode .fm-printer-files-workspace, html.ui3-mode .fm-settings-workspace,
+html.ui3-mode .fm-reports-workspace, html.ui3-mode .fm-diagnostics-workspace {
+  margin-top: 14px; height: calc(var(--u3-right-h, 100%) - 14px) !important; align-self: flex-start; }
+/*  Высота половины считается от верха колонки (там ещё 14 px её собственного отступа), а окно
+    начинается на 14 px ниже — поэтому из высоты вычитается ровно этот отступ. */
+
+
+/*  ── 32. Дашборд фермы (2.985, R-107) ──────────────────────────────────────────────────────
+    Четвёртый вид принтеров: обзор всей фермы. Пока принтер не выбран, колонка принтеров
+    занимает всю ширину, а правая половина скрыта и места НЕ резервирует; выбрали принтер —
+    справа пульт, сетка ужимается; закрыли — снова полный обзор. Классы ставит app.js.
+    Сетка адаптивная: столбцов столько, сколько помещается карточек не уже 142 css-точек
+    (совокупный масштаб программы ≈1.31, то есть ≈186 экранных; измерено стендом 08.09.2026):
+    6 при 1280, 7 при 1600, 9 при 1920, 12 при 2560 — и меньше при сужении окна, без
+    привязки к числам. Базовый стиль карточки держит max-height 74px — здесь он снят,
+    иначе третья строка содержимого пряталась. */
+html.ui3-mode.ui3-dash-full .left-col { width: auto !important; flex: 1 1 auto !important; min-width: 0 !important; }
+html.ui3-mode.ui3-dash-full .projects-pane { display: none !important; }
+html.ui3-mode.ui3-dash-pp .left-col { width: 46% !important; flex: 0 0 46% !important; min-width: 400px !important; }
+/*  Ряды — по содержимому. У авто-рядов Chrome берёт за вклад карточки её min-height, а не
+    содержимое (измерено стендом 09.09.2026): третья строка карточки пряталась за нижней
+    кромкой. max-content считает настоящую высоту; общий минимум высоты держит ряды ровными. */
+html.ui3-mode .pc-dash-cols { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(142px, 1fr)); grid-auto-rows: max-content; gap: 10px; align-content: start; padding-right: 4px; }
+html.ui3-mode .printer-card.pc-dashcard { padding: 9px 11px 8px !important; height: auto !important; min-height: 136px !important; max-height: none !important; display: flex; flex-direction: column; min-width: 0; }
+html.ui3-mode .pc-dash { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 auto; }
+html.ui3-mode .pcd-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+html.ui3-mode .pcd-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; background: var(--fm-text-subtle); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fm-text-subtle) 16%, transparent); }
+html.ui3-mode .pcd-name { font-size: 13px; font-weight: 650; color: var(--fm-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1 1 auto; letter-spacing: -0.01em; }
+html.ui3-mode .pcd-model { font-size: 10.5px; color: var(--fm-text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -3px; }
+html.ui3-mode .pcd-body { flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; min-width: 0; justify-content: center; }
+html.ui3-mode .pcd-msg { font-size: 12px; font-weight: 600; color: var(--fm-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.ui3-mode .pcd-file { font-size: 11px; color: var(--fm-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ui3-mode .pcd-bar { height: 5px; border-radius: 999px; background: color-mix(in srgb, var(--fm-text-primary) 8%, transparent); overflow: hidden; }
+html.ui3-mode .pcd-bar i { display: block; height: 100%; background: var(--fm-accent); border-radius: 999px; transition: width .4s ease; }
+html.ui3-mode .pcd-line { display: flex; justify-content: space-between; gap: 6px; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fm-text-muted); }
+html.ui3-mode .pcd-line b { color: var(--fm-text-primary); font-weight: 650; }
+html.ui3-mode .pcd-line span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+html.ui3-mode .pcd-temps { display: flex; gap: 10px; font-size: 11px; color: var(--fm-text-muted); font-variant-numeric: tabular-nums; }
+html.ui3-mode .pcd-temps span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+html.ui3-mode .pcd-temps svg { width: 12px; height: 12px; }
+html.ui3-mode .pcd-temps .hot { color: #ff7a3d; }
+/*  Цвет состояния — точка и, у требующих внимания, рамка карточки. Значения цветов — те же
+    токены, что у остальных состояний интерфейса. */
+html.ui3-mode .pcd-print .pcd-dot { background: var(--fm-accent); box-shadow: 0 0 0 3px var(--u3-accent-soft); }
+html.ui3-mode .pcd-done .pcd-dot { background: var(--fm-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fm-success) 22%, transparent); }
+html.ui3-mode .pcd-idle .pcd-dot { background: var(--fm-warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fm-warn) 18%, transparent); }
+/* 12.10.2026: «Занят» (калибровка, незнакомое состояние прошивки) — принтер работает, точка как у печати */
+html.ui3-mode .pcd-busy .pcd-dot { background: var(--fm-accent); box-shadow: 0 0 0 3px var(--u3-accent-soft); }
+html.ui3-mode .pcd-paused .pcd-dot { background: var(--fm-warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fm-warn) 22%, transparent); }
+html.ui3-mode .pcd-error .pcd-dot { background: var(--fm-danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fm-danger) 22%, transparent); }
+html.ui3-mode .printer-card.pc-dashcard.pcd-error { border-color: color-mix(in srgb, var(--fm-danger) 55%, transparent) !important; }
+html.ui3-mode .printer-card.pc-dashcard.pcd-error .pcd-msg { color: var(--fm-danger); }
+html.ui3-mode .printer-card.pc-dashcard.pcd-paused { border-color: color-mix(in srgb, var(--fm-warn) 50%, transparent) !important; }
+html.ui3-mode .printer-card.pc-dashcard.pcd-paused .pcd-msg,
+html.ui3-mode .printer-card.pc-dashcard.pcd-paused .pcd-st { color: var(--fm-warn); font-weight: 600; }
+html.ui3-mode .printer-card.pc-dashcard.pcd-done { border-color: color-mix(in srgb, var(--fm-success) 45%, transparent) !important; }
+html.ui3-mode .printer-card.pc-dashcard.pcd-done .pcd-msg { color: var(--fm-success); }
+html.ui3-mode .printer-card.pc-dashcard.pcd-offline { opacity: .62; }
+html.ui3-mode .printer-card.pc-dashcard.pcd-offline:hover { opacity: .85; }
+/*  Заголовок группы модели (сортировка «по модели») — на всю ширину сетки. */
+html.ui3-mode .pc-dash-cols .pc-model-head { grid-column: 1 / -1; }
+@media (prefers-reduced-motion: reduce) { html.ui3-mode .pcd-bar i { transition: none; } }
+
+
+/*  ── 33. Сообщения принтера в пульте (2.992, просьба владельца) ──────────────────────────
+    То, что всплывает на экране принтера, показывается и здесь: известный код переведён,
+    незнакомый показан кодом, узлом и важностью. Список короткий и прокручивается сам,
+    чтобы десяток уведомлений не выдавил пульт. */
+html.ui3-mode .ui3-pp-hms { margin: 0 14px 8px; padding: 8px 10px; border-radius: var(--u3-r-card); border: 1px solid var(--fm-border); background: var(--fm-surface-raised); max-height: 168px; overflow-y: auto; }
+html.ui3-mode .ui3-pp-hms-h { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--fm-text-subtle); margin-bottom: 6px; }
+html.ui3-mode .ui3-pp-hms-i { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent); }
+html.ui3-mode .ui3-pp-hms-i:first-of-type { border-top: none; }
+html.ui3-mode .ui3-pp-hms-dot { flex: 0 0 auto; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--hms, var(--fm-text-subtle)); }
+html.ui3-mode .ui3-pp-hms-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+html.ui3-mode .ui3-pp-hms-t b { font-size: 12px; font-weight: 650; color: var(--fm-text-primary); }
+html.ui3-mode .ui3-pp-hms-m { font-size: 10.5px; color: var(--fm-text-muted); font-variant-numeric: tabular-nums; }
+html.ui3-mode .ui3-pp-hms-i.sev-fatal, html.ui3-mode .ui3-pp-hms-i.sev-serious { --hms: var(--fm-danger); }
+html.ui3-mode .ui3-pp-hms-i.sev-common { --hms: var(--fm-warn); }
+html.ui3-mode .ui3-pp-hms-i.sev-info { --hms: var(--fm-accent); }
+html.ui3-mode .ui3-pp-hms-i.sev-unknown { --hms: var(--fm-text-subtle); }
+html.ui3-mode .ui3-pp-hms-f { margin-top: 6px; padding-top: 6px; border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent); font-size: 10.5px; color: var(--fm-text-subtle); }
+
+/*  16.09.2026: автозапуск очереди — подтверждение «Стол очищен» и выключатель. */
+html.ui3-mode .ui3-q-clr{flex:0 0 auto;padding:3px 10px;border-radius:8px;border:1px solid var(--fm-border-strong);
+  background:rgba(245,165,36,.14);color:#f5a524;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+html.ui3-mode .ui3-q-clr:hover{background:rgba(245,165,36,.24)}
+html.ui3-mode .ui3-q-auto{display:flex;flex-direction:column;gap:6px;margin:10px 0 0;padding:10px 12px;
+  border:1px solid var(--fm-border);border-radius:12px;background:var(--fm-surface-card);min-width:0}
+html.ui3-mode .ui3-q-auto-h{display:flex;align-items:center;gap:8px;min-width:0}
+html.ui3-mode .ui3-q-auto-sw{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--fm-text-primary)}
+html.ui3-mode .ui3-q-auto-t{font-size:12px;line-height:1.45;color:var(--fm-text-subtle)}
+html.ui3-mode .ui3-q-auto-list{display:flex;flex-wrap:wrap;gap:6px 14px;min-width:0}
+html.ui3-mode .ui3-q-auto-p{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fm-text-secondary);cursor:pointer}
+html.ui3-mode .ui3-q-auto-e{font-size:12px;color:var(--fm-text-subtle)}
+
+/*  ── 34. Складской учёт в оформлении 3.0 (R-051) ─────────────────────────────────────────
+    Окно склада — модуль, но рамка его окна принадлежит ядру (app.css), а сам модуль красит
+    карточки своим листом. Здесь ТОЛЬКО переопределения вида: разметка и поведение модуля
+    не меняются, поэтому новое оформление действует для любой установленной версии склада,
+    а интерфейс 2.0 (лист не подключён) остаётся прежним. Если будущая версия модуля
+    переименует классы, вид просто вернётся к 2.0 — сломаться ему нечему.
+    Селектор html.ui3-mode .fm-inv-x сильнее правил модуля .fm-inv-x и не зависит от порядка
+    листов. Положение и размер окна (.fm-inv-panel) НЕ задаются: их пишет модуль инлайном,
+    на этом держатся перетаскивание и растяжение. Отступы .fm-inv-body/.fm-inv-tabpane тоже
+    не трогаются: на них держится липкая шапка таблицы «В работе» (фикс модуля 1.7.9).
+    Жёсткие цвета модуля (#f5a524, #e5a524, #e5484d, #2ea043) заменены токенами состояния —
+    иначе в светлой теме склад показывал бы «чужой» янтарный и зелёный. */
+html.ui3-mode .fm-inv-backdrop { background: rgba(var(--fm-black-rgb), .45); backdrop-filter: blur(3px); }
+html.ui3-mode[data-theme="light"] .fm-inv-backdrop { background: rgba(var(--fm-black-rgb), .22); }
+html.ui3-mode .fm-inv-panel {
+  background: var(--fm-surface-base); border: 1px solid var(--fm-border-strong);
+  border-radius: var(--u3-r-panel);
+  box-shadow: var(--u3-shadow-hi), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 4.5%, transparent); }
+html.ui3-mode[data-theme="light"] .fm-inv-panel {
+  box-shadow: var(--u3-shadow-hi), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 90%, transparent); }
+/*  Шапка окна — как заголовок настроек: мелко, плотно, без акцентного значка. */
+html.ui3-mode .fm-inv-head { padding: 12px 14px 12px 20px; border-bottom: 1px solid var(--fm-border); }
+html.ui3-mode .fm-inv-title { font-size: 14px; font-weight: 650; letter-spacing: -.01em; color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-title svg { color: var(--fm-text-muted); width: 18px; height: 18px; }
+html.ui3-mode .fm-inv-subt { font-size: 12px; font-weight: 500; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-close {
+  border: 0; border-radius: 999px; padding: 5px 13px; background: transparent;
+  font-size: 12.5px; font-weight: 600; color: var(--fm-text-subtle); white-space: nowrap; }
+html.ui3-mode .fm-inv-close:hover { background: var(--u3-hover); color: var(--fm-text-primary); }
+/*  Вкладки — сегментный переключатель 3.0 (как .fm-seg в разделе 15): капсула-дорожка,
+    активная часть — светлая капсула с тенью, без заливки акцентом и без «папки».
+    По ширине — по содержимому; в самом узком окне склада (620) все пять помещаются.
+    Если нет («Размер текста» 130 %) — вкладки переносятся на вторую строку, как в 2.0,
+    а не прячутся за краем дорожки. Скругление 17 px: в одну строку это та же капсула
+    (высота дорожки ≈ 33 px), в две — скруглённый прямоугольник. */
+html.ui3-mode .fm-inv-tabs {
+  align-self: flex-start; flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 2px; margin: 12px 16px;
+  padding: 3px; max-width: calc(100% - 32px);
+  border-radius: 17px; background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .fm-inv-tab {
+  flex: 0 0 auto; padding: 5px 15px; border: 0; border-radius: 999px; background: transparent;
+  font-size: 12.5px; font-weight: 600; color: var(--fm-text-subtle); white-space: nowrap; }
+html.ui3-mode .fm-inv-tab:hover:not(.active) { color: var(--fm-text-primary); background: transparent; }
+html.ui3-mode .fm-inv-tab.active {
+  color: var(--fm-text-primary); background: var(--fm-surface-card); box-shadow: var(--u3-shadow); }
+/*  Режимы «в работе / на складе» — тихие капсулы, выбранная мягко подсвечена акцентом.
+    Сводка справа — просто числа с подписью, без коробки (как сводка экрана «Филамент»). */
+html.ui3-mode .fm-inv-kpis { padding: 0 16px 12px; }
+html.ui3-mode .fm-inv-nav { gap: 4px; }
+html.ui3-mode .fm-inv-kpi {
+  align-items: baseline; padding: 5px 13px; border: 1px solid transparent; border-radius: 999px;
+  background: transparent; font-size: 12px; font-weight: 600; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-kpi b { font-size: 15px; font-weight: 650; color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-kpi:hover { background: var(--u3-hover); border-color: transparent; }
+html.ui3-mode .fm-inv-kpi.on { background: var(--u3-accent-soft); border-color: transparent; color: var(--fm-accent); }
+html.ui3-mode .fm-inv-kpi.on b { color: var(--fm-accent); }
+html.ui3-mode .fm-inv-kpi.warn b { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-sum { gap: 18px; border: 0; background: transparent; border-radius: 0; }
+html.ui3-mode .fm-inv-sum-i { flex-direction: row; align-items: baseline; gap: 5px; padding: 0; }
+html.ui3-mode .fm-inv-sum-i + .fm-inv-sum-i { border-left: 0; }
+html.ui3-mode .fm-inv-sum-i > b { font-size: 15px; font-weight: 650; }
+html.ui3-mode .fm-inv-sum-i > span { font-size: 12px; font-weight: 500; letter-spacing: 0; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-body { border-top: 1px solid var(--fm-border); }
+html.ui3-mode .fm-inv-foot { border-top: 1px solid var(--fm-border); font-size: 12px; padding: 10px 20px; }
+html.ui3-mode .fm-inv-foot-ok { color: var(--fm-text-muted); font-weight: 650; }
+/*  Пустое состояние — спокойное, без крупного акцентного значка. */
+html.ui3-mode .fm-inv-empty { color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-empty-icon { color: var(--fm-text-subtle); opacity: .6; }
+html.ui3-mode .fm-inv-empty-title { font-size: 15px; font-weight: 650; }
+html.ui3-mode .fm-inv-empty-text { font-size: 13px; }
+
+/*  Кнопки: главная залита акцентом, остальные тихие (раздел 8). Правила .primary и .danger
+    повторены ниже базового: иначе базовое правило слоя перебило бы их заливку. */
+html.ui3-mode .fm-inv-btn {
+  padding: 7px 14px; border: 1px solid var(--fm-border); border-radius: var(--u3-r-ctl);
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent);
+  font-size: 13px; font-weight: 600; color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-btn:hover { border-color: var(--fm-border-strong);
+  background: color-mix(in srgb, var(--fm-text-primary) 8%, transparent); }
+html.ui3-mode .fm-inv-btn.primary { background: var(--fm-accent); border-color: transparent; color: var(--fm-white); }
+html.ui3-mode .fm-inv-btn.primary:hover { background: var(--fm-accent); filter: brightness(1.08); }
+html.ui3-mode .fm-inv-btn.danger { background: var(--fm-danger); border-color: transparent; color: var(--fm-white); }
+html.ui3-mode .fm-inv-btn.danger:hover { background: var(--fm-danger); filter: brightness(1.06); }
+html.ui3-mode .fm-inv-abtn {
+  padding: 4px 11px; border: 1px solid var(--fm-border); border-radius: 999px; background: transparent;
+  font-size: 11.5px; font-weight: 600; color: var(--fm-text-muted); }
+html.ui3-mode .fm-inv-abtn:hover:not(:disabled) { background: var(--u3-hover); border-color: var(--fm-border-strong); color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-abtn.dng,
+html.ui3-mode .fm-inv-bulkbar .fm-inv-abtn.dng { color: var(--fm-danger); border-color: color-mix(in srgb, var(--fm-danger) 45%, transparent); }
+html.ui3-mode .fm-inv-abtn.dng:hover:not(:disabled),
+html.ui3-mode .fm-inv-bulkbar .fm-inv-abtn.dng:hover:not(:disabled) {
+  color: var(--fm-danger); border-color: var(--fm-danger); background: color-mix(in srgb, var(--fm-danger) 12%, transparent); }
+/*  Значки-кнопки (этикетки, правка, удаление, «⋯», раскрытие) — круглые и тихие. */
+html.ui3-mode .fm-inv-ico,
+html.ui3-mode .fm-inv-gmore,
+html.ui3-mode .fm-inv-vchev { border-color: transparent; border-radius: 999px; background: transparent; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-ico:hover,
+html.ui3-mode .fm-inv-gmore:hover,
+html.ui3-mode .fm-inv-vchev:hover { background: var(--u3-hover); border-color: transparent; color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-ico.danger:hover { background: color-mix(in srgb, var(--fm-danger) 12%, transparent); color: var(--fm-danger); }
+html.ui3-mode .fm-inv-ico.on { background: var(--u3-accent-soft); color: var(--fm-accent); }
+html.ui3-mode .fm-inv-vchev.on { color: var(--fm-text-primary); }
+/*  Панель фильтров — вложенная поверхность; сортировка — маленький сегментный переключатель. */
+html.ui3-mode .fm-inv-fbar {
+  padding: 8px 10px; border: 1px solid var(--fm-border); border-radius: var(--u3-r-card);
+  background: color-mix(in srgb, var(--fm-text-primary) 2.5%, transparent); }
+html.ui3-mode .fm-inv-fsel { font-weight: 500; }
+html.ui3-mode .fm-inv-check { color: var(--fm-text-muted); }
+html.ui3-mode .fm-inv-freset {
+  border-radius: 999px; color: var(--fm-danger); border-color: color-mix(in srgb, var(--fm-danger) 40%, transparent); }
+html.ui3-mode .fm-inv-freset:hover { background: color-mix(in srgb, var(--fm-danger) 10%, transparent); }
+html.ui3-mode .fm-inv-sort {
+  gap: 2px; padding: 3px; border: 0; border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .fm-inv-sort button {
+  padding: 4px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 600; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-sort button:hover { color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-sort button.on { background: var(--fm-surface-card); color: var(--fm-text-primary); box-shadow: var(--u3-shadow); }
+html.ui3-mode .fm-inv-sort button.dir { padding: 4px 9px; }
+/*  Выбор нескольких катушек: панель — поверхность окна с мягкой акцентной линией. */
+html.ui3-mode .fm-inv-bulkbar {
+  background: var(--fm-surface-base); border-color: color-mix(in srgb, var(--fm-accent) 45%, transparent);
+  border-radius: var(--u3-r-card); box-shadow: var(--u3-shadow); }
+html.ui3-mode .fm-inv-bulk-hid,
+html.ui3-mode .fm-inv-bulk-blk-rsn { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-bulk-sum-row b.ok { color: var(--fm-success); }
+html.ui3-mode .fm-inv-bulk-sum-row b.dng { color: var(--fm-danger); }
+html.ui3-mode .fm-inv-selof { background: var(--u3-accent-soft); }
+html.ui3-mode .fm-inv-srow.selsel { background: var(--u3-accent-soft); }
+
+/*  ── 34.1. «В работе»: принтеры фермы — карточки-группы с тихими разделителями. ── */
+html.ui3-mode .fm-inv-psec {
+  background: var(--fm-surface-raised); border: 1px solid var(--fm-border); border-radius: var(--u3-r-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-psec-h { padding: 8px 14px; background: transparent; border-bottom-color: var(--fm-border); }
+html.ui3-mode .fm-inv-psec-t { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; color: var(--fm-text-subtle); opacity: 1; }
+html.ui3-mode .fm-inv-psec-c { font-size: 11px; font-weight: 500; }
+html.ui3-mode .fm-inv-prow { border-bottom-color: var(--fm-border); }
+html.ui3-mode .fm-inv-prow:hover { background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+/*  Липкая шапка таблицы — цвета окна, иначе под ней просвечивала бы прежняя подложка.
+    Правило идёт ПОСЛЕ наведения на строку: у шапки тот же класс строки. */
+html.ui3-mode .fm-inv-prow-h,
+html.ui3-mode .fm-inv-prow-h:hover { background: var(--fm-surface-base); }
+html.ui3-mode .fm-inv-prow-h > span { font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+html.ui3-mode .fm-inv-pimg {
+  border-radius: 12px; border-color: var(--fm-border); background: color-mix(in srgb, var(--fm-text-primary) 5%, transparent); }
+html.ui3-mode .fm-inv-pname2 { font-weight: 650; }
+html.ui3-mode .fm-inv-pst.ok i { background: var(--fm-success); }
+html.ui3-mode .fm-inv-pst.low { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-pst.low i { background: var(--fm-warn); }
+html.ui3-mode .fm-inv-pext:hover { background: var(--u3-hover); }
+html.ui3-mode .fm-inv-pext.low {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fm-danger) 45%, transparent);
+  background: color-mix(in srgb, var(--fm-danger) 6%, transparent); }
+html.ui3-mode .fm-inv-pext-bar,
+html.ui3-mode .fm-inv-srow-bar { background: color-mix(in srgb, var(--fm-text-primary) 10%, transparent); }
+html.ui3-mode .fm-inv-pext-m, html.ui3-mode .fm-inv-pext-g,
+html.ui3-mode .fm-inv-prem, html.ui3-mode .fm-inv-pslot-pct { font-weight: 650; }
+html.ui3-mode .fm-inv-pfree { border-color: var(--fm-border-strong); border-radius: 12px; }
+html.ui3-mode .fm-inv-pfree:hover { border-color: var(--fm-accent); background: var(--u3-accent-soft); }
+html.ui3-mode .fm-inv-punit2 {
+  border-color: var(--fm-border); border-radius: 12px; background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-pslot {
+  border-color: var(--fm-border-strong); border-radius: 10px; background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .fm-inv-pslot:hover { border-color: var(--fm-accent); }
+html.ui3-mode .fm-inv-pslot.add { background: transparent; }
+html.ui3-mode .fm-inv-pslot.add:hover { background: var(--u3-accent-soft); border-color: var(--fm-accent); }
+html.ui3-mode .fm-inv-pslot.low {
+  border-color: color-mix(in srgb, var(--fm-danger) 55%, transparent); background: color-mix(in srgb, var(--fm-danger) 7%, transparent); }
+html.ui3-mode .fm-inv-pslot.mm { border-color: var(--fm-warn); background: color-mix(in srgb, var(--fm-warn) 10%, transparent); }
+html.ui3-mode .fm-inv-punc { border-color: var(--fm-border); background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-pfc.soon { color: var(--fm-warn); }
+/*  Сверка материала на ячейке: те же знаки, цвета — токены состояния. */
+html.ui3-mode .fm-inv-mck.mck-ok { color: var(--fm-success); background: color-mix(in srgb, var(--fm-success) 14%, transparent); }
+html.ui3-mode .fm-inv-mck.mck-warn {
+  background: color-mix(in srgb, var(--fm-warn) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fm-warn) 60%, transparent); }
+html.ui3-mode .fm-inv-mck.mck-warn b,
+html.ui3-mode .fm-inv-mck.mck-empty b { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-mck.mck-empty { background: color-mix(in srgb, var(--fm-warn) 14%, transparent); }
+html.ui3-mode .fm-inv-mck-dot.mck-ok { background: var(--fm-success); }
+html.ui3-mode .fm-inv-mck-dot.mck-warn {
+  background: var(--fm-warn); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--fm-warn) 30%, transparent); }
+html.ui3-mode .fm-inv-mck-dot.mck-empty { background: color-mix(in srgb, var(--fm-warn) 60%, var(--fm-white)); }
+
+/*  ── 34.2. «На складе»: группы материалов — карточки, числа табличные, чипы мягкие. ── */
+html.ui3-mode .fm-inv-mcard {
+  background: var(--fm-surface-raised); border: 1px solid var(--fm-border); border-radius: var(--u3-r-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-mcard.open { border-color: var(--fm-border-strong); box-shadow: var(--u3-shadow); }
+html.ui3-mode .fm-inv-mhead:hover { background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-mcard.open .fm-inv-mhead { background: transparent; }
+/*  Только цвет разделителей секций: их толщину и сторону задаёт модуль (на узком окне
+    секция состояния переносится вниз и делится линией сверху). */
+html.ui3-mode .fm-inv-msec-stock,
+html.ui3-mode .fm-inv-msec-state,
+html.ui3-mode .fm-inv-msec-act { border-color: var(--fm-border); }
+html.ui3-mode .fm-inv-mtt-name { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+html.ui3-mode .fm-inv-mtt-n { font-weight: 600; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-mstat-v, html.ui3-mode .fm-inv-msum { font-weight: 650; }
+html.ui3-mode .fm-inv-mstat-l { font-size: 9.5px; font-weight: 600; letter-spacing: .08em; }
+html.ui3-mode .fm-inv-schip {
+  padding: 3px 10px; border-radius: 999px; font-weight: 600;
+  background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); color: var(--fm-text-muted); }
+html.ui3-mode .fm-inv-schip-n { font-weight: 700; }
+html.ui3-mode .fm-inv-schip.full { background: var(--u3-accent-soft); color: var(--fm-accent); }
+html.ui3-mode .fm-inv-schip.full .fm-inv-schip-n { color: var(--fm-accent); }
+html.ui3-mode .fm-inv-schip.low { background: color-mix(in srgb, var(--fm-warn) 14%, transparent); color: var(--fm-warn); }
+html.ui3-mode .fm-inv-schip.low .fm-inv-schip-n { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-schip.zero {
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); color: var(--fm-text-subtle); opacity: .7; }
+html.ui3-mode .fm-inv-schip.zero .fm-inv-schip-n { color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-mbody { border-top-color: var(--fm-border); padding: 8px 12px 12px; gap: 8px; }
+html.ui3-mode .fm-inv-vsec {
+  border-color: var(--fm-border); border-radius: 12px; background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-vsec.open { border-color: var(--fm-border-strong); }
+html.ui3-mode .fm-inv-vhead:hover { background: var(--u3-hover); }
+html.ui3-mode .fm-inv-vt-main { font-weight: 650; }
+html.ui3-mode .fm-inv-vsum { font-weight: 650; }
+html.ui3-mode .fm-inv-wgbody { border-top-color: var(--fm-border); }
+html.ui3-mode .fm-inv-srow:hover { background: var(--u3-hover); }
+html.ui3-mode .fm-inv-srow.selsel { box-shadow: inset 2px 0 0 var(--fm-accent); }
+/*  Наведение на ВЫБРАННУЮ строку усиливает акцент (как в модуле), а не гасит его в серый. */
+html.ui3-mode .fm-inv-srow.selsel:hover { background: color-mix(in srgb, var(--fm-accent) 18%, transparent); }
+html.ui3-mode .fm-inv-srow.low .fm-inv-srow-lbl { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-srow-h, html.ui3-mode .fm-inv-srow-h:hover { background: transparent; }
+html.ui3-mode .fm-inv-srow-h { font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+html.ui3-mode .fm-inv-srow-lbl, html.ui3-mode .fm-inv-srow-rem { font-weight: 650; }
+html.ui3-mode .fm-inv-cb { border-color: var(--fm-border-strong); border-radius: 6px; }
+
+/*  ── 34.3. Запчасти, локации, стоимость — те же карточки и числа. ── */
+html.ui3-mode .fm-inv-item {
+  background: var(--fm-surface-raised); border-color: var(--fm-border); border-radius: var(--u3-r-card); }
+html.ui3-mode .fm-inv-item:hover { border-color: var(--fm-border-strong); }
+html.ui3-mode .fm-inv-item.low {
+  border-color: color-mix(in srgb, var(--fm-warn) 45%, transparent); background: color-mix(in srgb, var(--fm-warn) 6%, var(--fm-surface-raised)); }
+html.ui3-mode .fm-inv-item-name { font-weight: 650; }
+html.ui3-mode .fm-inv-item-cat { background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); color: var(--fm-text-muted); font-weight: 600; }
+html.ui3-mode .fm-inv-item-low { background: color-mix(in srgb, var(--fm-warn) 14%, transparent); color: var(--fm-warn); }
+html.ui3-mode .fm-inv-low-n { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-qty-n { font-weight: 650; font-variant-numeric: tabular-nums; }
+html.ui3-mode .fm-inv-loc { border-radius: 10px; }
+html.ui3-mode .fm-inv-loc:hover { background: var(--u3-hover); }
+html.ui3-mode .fm-inv-loc-ic { color: var(--fm-text-subtle); opacity: 1; }
+html.ui3-mode .fm-inv-cost-card {
+  background: var(--fm-surface-raised); border-color: var(--fm-border); border-radius: var(--u3-r-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-cost-val { font-size: 20px; font-weight: 650; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+html.ui3-mode .fm-inv-cost-h { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-cost-row { border-bottom-color: var(--fm-border); }
+html.ui3-mode .fm-inv-cost-c { color: var(--fm-text-primary); font-weight: 650; font-variant-numeric: tabular-nums; }
+
+/*  ── 34.4. Диалоги склада: окно 3.0 — поверхность, скругление панели, тень, тихие линии. ── */
+html.ui3-mode .fm-inv-dlg-back { background: rgba(var(--fm-black-rgb), .45); backdrop-filter: blur(3px); }
+html.ui3-mode[data-theme="light"] .fm-inv-dlg-back { background: rgba(var(--fm-black-rgb), .22); }
+html.ui3-mode .fm-inv-dlg {
+  background: var(--fm-surface-base); border: 1px solid var(--fm-border-strong); border-radius: var(--u3-r-panel);
+  box-shadow: var(--u3-shadow-hi), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 4.5%, transparent); }
+html.ui3-mode[data-theme="light"] .fm-inv-dlg {
+  box-shadow: var(--u3-shadow-hi), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 90%, transparent); }
+html.ui3-mode .fm-inv-dlg-title {
+  padding: 14px 20px 12px; border-bottom-color: var(--fm-border); font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+html.ui3-mode .fm-inv-dlg-body { padding: 14px 20px; }
+html.ui3-mode .fm-inv-dlg-actions { padding: 12px 20px 14px; border-top-color: var(--fm-border); }
+html.ui3-mode .fm-inv-field > label { font-size: 11.5px; font-weight: 600; color: var(--fm-text-subtle); }
+html.ui3-mode .fm-inv-adj-btns button {
+  border-color: var(--fm-border); border-radius: var(--u3-r-ctl);
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); font-weight: 600; color: var(--fm-text-muted); }
+html.ui3-mode .fm-inv-adj-btns button.active { background: var(--u3-accent-soft); border-color: var(--fm-accent); color: var(--fm-accent); }
+/*  Выбор катушки из склада — поле и выпадающий список. */
+html.ui3-mode .fm-inv-spick-inp {
+  border-color: var(--fm-border); border-radius: var(--u3-r-ctl); background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .fm-inv-spick-list {
+  background: var(--fm-surface-card); border-color: var(--fm-border-strong); border-radius: var(--u3-r-card); box-shadow: var(--u3-shadow-hi); }
+html.ui3-mode .fm-inv-spick-g, html.ui3-mode .fm-inv-spick-s { border-radius: 8px; }
+html.ui3-mode .fm-inv-spick-g.hi, html.ui3-mode .fm-inv-spick-s.hi { background: var(--u3-hover); }
+html.ui3-mode .fm-inv-spick-s.cur { background: var(--u3-accent-soft); }
+html.ui3-mode .fm-inv-spick-exp { border-color: transparent; border-radius: 999px; }
+html.ui3-mode .fm-inv-spick-exp:hover { background: var(--u3-hover); border-color: transparent; color: var(--fm-text-primary); }
+/*  Привязка к принтеру: карточки принтеров и подтверждение замены. */
+html.ui3-mode .fm-inv-bpr { background: var(--fm-surface-raised); border-color: var(--fm-border); border-radius: 12px; }
+html.ui3-mode .fm-inv-bpr:hover { border-color: var(--fm-border-strong); }
+html.ui3-mode .fm-inv-bpr.free { border-color: color-mix(in srgb, var(--fm-success) 45%, transparent); }
+html.ui3-mode .fm-inv-bpr.free:hover { border-color: var(--fm-success); background: color-mix(in srgb, var(--fm-success) 6%, var(--fm-surface-raised)); }
+html.ui3-mode .fm-inv-bpr.cur {
+  border-color: var(--fm-success); background: color-mix(in srgb, var(--fm-success) 10%, var(--fm-surface-raised)); box-shadow: 0 0 0 1px var(--fm-success); }
+html.ui3-mode .fm-inv-bpr.sel { border-color: var(--fm-accent); box-shadow: 0 0 0 1px var(--fm-accent); }
+html.ui3-mode .fm-inv-bpr-h.cur { color: var(--fm-success); }
+html.ui3-mode .fm-inv-bpr-state.free, html.ui3-mode .fm-inv-bpr-state.current {
+  color: var(--fm-success); background: color-mix(in srgb, var(--fm-success) 15%, transparent); }
+html.ui3-mode .fm-inv-bpr-state.occupied { color: var(--fm-warn); background: color-mix(in srgb, var(--fm-warn) 15%, transparent); }
+html.ui3-mode .fm-inv-bpr-chip { border-color: var(--fm-border); background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); border-radius: 999px; }
+html.ui3-mode .fm-inv-bpr-chip.me { border-color: var(--fm-success); color: var(--fm-success); }
+html.ui3-mode .fm-inv-bcf-row { border-color: var(--fm-border); border-radius: 10px; }
+html.ui3-mode .fm-inv-bcf-row.old { background: color-mix(in srgb, var(--fm-warn) 8%, transparent); }
+html.ui3-mode .fm-inv-bcf-row.new { background: color-mix(in srgb, var(--fm-success) 8%, transparent); }
+html.ui3-mode .fm-inv-slot { border-color: var(--fm-border); border-radius: 999px; background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .fm-inv-slot.active { border-color: var(--fm-accent); background: var(--u3-accent-soft); }
+html.ui3-mode .fm-inv-slot-busy, html.ui3-mode .fm-inv-st.warn { color: var(--fm-warn); }
+/*  Значок «мало» у слота и приход/расход в истории катушки — цветами темы, а не жёсткими
+    #f5a524 / #2ea043 / #e5484d модуля (в светлой теме те почти не читаются на белом). */
+html.ui3-mode .fm-inv-slot-low { color: var(--fm-warn); }
+html.ui3-mode .fm-inv-hist-k.k-in { color: var(--fm-success); }
+html.ui3-mode .fm-inv-hist-k.k-out { color: var(--fm-danger); }
+/*  Сверка цвета катушек. */
+html.ui3-mode .fm-inv-rec-row {
+  border-color: var(--fm-border); border-radius: 12px; background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .fm-inv-rec-st { border-color: var(--fm-border); background: color-mix(in srgb, var(--fm-text-primary) 5%, transparent); }
+html.ui3-mode .fm-inv-rec-st.ok, html.ui3-mode .fm-inv-rec-st.bad { background: transparent; border-color: currentColor; }
+html.ui3-mode .fm-inv-rec-sync { border-radius: 999px; }
+html.ui3-mode .fm-inv-rec-sync:hover:not(:disabled) { background: var(--u3-accent-soft); }
+html.ui3-mode .fm-inv-rec-warn {
+  border-color: color-mix(in srgb, var(--fm-warn) 60%, transparent); color: var(--fm-warn);
+  background: color-mix(in srgb, var(--fm-warn) 10%, transparent); border-radius: 10px; }
+/*  Всплывающее сообщение склада — капсула над окном. */
+html.ui3-mode .fm-inv-toast {
+  border-radius: 999px; background: var(--fm-surface-card); border-color: var(--fm-border-strong);
+  box-shadow: var(--u3-shadow-hi); font-size: 13px; }
+html.ui3-mode .fm-inv-toast.ok { border-color: color-mix(in srgb, var(--fm-success) 50%, transparent); }
+html.ui3-mode .fm-inv-toast.err { border-color: color-mix(in srgb, var(--fm-danger) 50%, transparent); }
+/*  Контекстное меню склада (правый щелчок по катушке) — как меню 3.0 в пульте принтера
+    (.ui3-pp-menu): поверхность карточки, скругление 12 px, тень 3.0, пункты-капсулы.
+    Двойной класс .ctx-menu.fm-inv-ctx — чтобы перебить общее правило светлой темы
+    «:root[data-theme=light] .ctx-menu» из app.css; остальные контекстные меню не трогаются. */
+html.ui3-mode .ctx-menu.fm-inv-ctx {
+  background: var(--fm-surface-card); border: 1px solid var(--fm-border-strong); border-radius: 12px;
+  box-shadow: var(--u3-shadow-hi); padding: 6px; gap: 2px; }
+html.ui3-mode .fm-inv-ctx .ctx-item {
+  border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-ctx .ctx-item:hover {
+  background: color-mix(in srgb, var(--fm-text-primary) 6%, transparent); color: var(--fm-text-primary); }
+html.ui3-mode .fm-inv-ctx .ctx-ico { color: var(--fm-text-muted); }
+html.ui3-mode .fm-inv-ctx .ctx-item.danger, html.ui3-mode .fm-inv-ctx .ctx-item.danger .ctx-ico { color: var(--fm-danger); }
+html.ui3-mode .fm-inv-ctx .ctx-item.danger:hover {
+  background: color-mix(in srgb, var(--fm-danger) 10%, transparent); color: var(--fm-danger); }
+
+
+/*  ── 35. «Отчёты и статистика» в оформлении 3.0 (R-051) ─────────────────────────────────
+    По образцу настроек (раздел 25): только вид, разметка index.html та же. Поверхность и
+    скругление панели, заголовок как у настроек, срок — сегментный переключатель,
+    карточки-числа второго уровня, таблицы — строки-полосы. Высоту и отступ сверху по-прежнему
+    задаёт раздел 31; горизонтальные поля строк таблицы не меняются — на них рассчитана
+    ширина колонок (иначе имя принтера на ноутбуке урезалось бы). */
+html.ui3-mode .fm-reports-workspace {
+  background: var(--fm-surface-base); border: 1px solid var(--fm-border); border-radius: var(--u3-r-panel);
+  box-shadow: var(--u3-shadow), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 4.5%, transparent); }
+html.ui3-mode[data-theme="light"] .fm-reports-workspace {
+  box-shadow: var(--u3-shadow), inset 0 1px 0 color-mix(in srgb, var(--fm-white) 90%, transparent); }
+html.ui3-mode .rep-head { gap: 8px; padding: 10px 12px 10px 18px; border-bottom-color: var(--fm-border); }
+html.ui3-mode .rep-ico { color: var(--fm-text-muted); }
+html.ui3-mode .rep-title { font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+html.ui3-mode .rep-period {
+  gap: 1px; padding: 2px; margin-left: 4px; border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-text-primary) 4%, transparent); }
+html.ui3-mode .rep-pbtn {
+  padding: 4px 9px; border: 0; border-radius: 999px; background: transparent;
+  font-size: 11px; font-weight: 600; color: var(--fm-text-subtle); }
+html.ui3-mode .rep-pbtn:hover:not(:disabled) { color: var(--fm-text-primary); }
+html.ui3-mode .rep-pbtn.is-on {
+  color: var(--fm-text-primary); background: var(--fm-surface-card); box-shadow: var(--u3-shadow); }
+html.ui3-mode .rep-btn {
+  border-color: var(--fm-border); border-radius: 999px; font-weight: 600; color: var(--fm-text-muted); }
+html.ui3-mode .rep-btn:hover:not(:disabled) { background: var(--u3-hover); color: var(--fm-text-primary); }
+html.ui3-mode .rep-x { border-color: transparent; border-radius: 999px; color: var(--fm-text-subtle); }
+html.ui3-mode .rep-x:hover { background: var(--u3-hover); border-color: transparent; color: var(--fm-text-primary); }
+html.ui3-mode .rep-body { padding: 16px 18px 20px; gap: 16px; }
+html.ui3-mode .rep-empty { color: var(--fm-text-subtle); }
+html.ui3-mode .rep-note { font-size: 11.5px; color: var(--fm-text-subtle); line-height: 1.45; }
+html.ui3-mode .rep-cards { gap: 10px; }
+html.ui3-mode .rep-card {
+  gap: 2px; padding: 10px 12px; border-color: var(--fm-border); border-radius: var(--u3-r-card);
+  background: var(--fm-surface-raised);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode[data-theme="light"] .rep-card { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fm-white) 85%, transparent); }
+html.ui3-mode .rep-cv { font-size: 21px; font-weight: 650; letter-spacing: -.01em; }
+html.ui3-mode .rep-cv-s { font-size: 16px; }
+html.ui3-mode .rep-cl { font-size: 11.5px; color: var(--fm-text-subtle); }
+html.ui3-mode .rep-sec { gap: 8px; }
+html.ui3-mode .rep-sec-h { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--fm-text-subtle); }
+html.ui3-mode .rep-day-bar { border-radius: 5px 5px 0 0; background: color-mix(in srgb, var(--fm-text-primary) 10%, transparent); }
+html.ui3-mode .rep-day-ok { opacity: .9; }
+html.ui3-mode .rep-day-n { color: var(--fm-text-muted); }
+html.ui3-mode .rep-day-l { color: var(--fm-text-subtle); }
+html.ui3-mode .rep-tbl { border-color: var(--fm-border); border-radius: var(--u3-r-card); background: var(--fm-surface-base); }
+html.ui3-mode .rep-tr { padding-top: 7px; padding-bottom: 7px; }
+html.ui3-mode .rep-th {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--fm-text-subtle);
+  background: transparent; border-bottom-color: var(--fm-border); }
+html.ui3-mode .rep-tr:nth-child(odd):not(.rep-th) { background: color-mix(in srgb, var(--fm-text-primary) 3%, transparent); }
+html.ui3-mode .rep-tr:not(.rep-th):hover { background: var(--u3-hover); }
+html.ui3-mode .rep-dur { color: var(--fm-text-muted); }
+html.ui3-mode .rep-foot {
+  padding: 12px 14px; border-color: var(--fm-border); border-radius: var(--u3-r-card);
+  background: color-mix(in srgb, var(--fm-text-primary) 2.5%, transparent); color: var(--fm-text-subtle); }
+
+/*  ── 36. Пульт принтера прокручивается сам (29.09.2026, R-111) ─────────────────────────
+    На окнах уже 1600 точек пульт встаёт в одну колонку (камера сверху) и становится выше
+    правой половины. На вкладках «Проекты» и «Задачи» половина — колонка без своей прокрутки
+    (см. 27 и 29), поэтому низ пульта — «Служебное» и задание — просто обрезался, а колесо мыши
+    ничего не делало. Теперь при открытом пульте половина одинакова на всех вкладках: колонка
+    без прокрутки, а прокручивается сам пульт. Высоту даёт половина (rightColH из app.js,
+    с поправкой на zoom), поэтому никаких vh здесь нет. flex 0 1 auto, а не 1 1 auto: на широком
+    окне пульт не растягивается до низа, он остаётся своей высоты. */
+html.ui3-mode .projects-pane:has(> section.ui3-pp) {
+  display: flex; flex-direction: column; overflow: hidden !important; padding-bottom: 0 !important; }
+html.ui3-mode .projects-pane > section.ui3-pp {
+  flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; isolation: isolate; }
+/*  Шапка пульта (имя, состояние, крестик закрытия) стоит на месте, прокручивается всё под ней.
+    z-index выше, чем у выпадающих списков пульта (.ui3-pp-menu, 40): открытый список файлов или
+    катушек при прокрутке уходит ПОД шапку, а не ложится на неё. isolation у пульта (выше) держит
+    этот z-index внутри пульта: иначе шапка соревновалась бы со всей страницей и вылезала поверх
+    затемнения формы «Добавить/Изменить принтер» (z-index 40), а её крестик нажимался бы сквозь него. */
+html.ui3-mode .ui3-pp > .ui3-pp-head {
+  position: sticky; top: 0; z-index: 41; background: var(--fm-surface-card);
+  border-radius: var(--u3-r-panel) var(--u3-r-panel) 0 0; }
+/*  Окно камеры живёт поверх страницы и едет за местом под камеру. Чтобы при прокрутке пульта
+    оно не наезжало на его шапку и на шапку программы, app.js (_ui3DockCam) считает, сколько
+    места ушло под шапку пульта и за его нижний край, и окно обрезается ровно по видимой части.
+    Обрезанная часть и нажатия не принимает. */
+html.ui3-mode.ui3-cam-dock #fm-overlay-root > .fm-cam-ov {
+  clip-path: inset(var(--u3-cam-clip-t, 0px) 0 var(--u3-cam-clip-b, 0px) 0); }
+
+/*  ── 37. Пульт на окнах уже 1600 точек: управление видно сразу (08.10.2026, обход фермы, R-111) ──
+    Снимок владельца с экрана 1366×768: пульт в одну колонку, камера во всю ширину заняла всю
+    видимую часть, управление начиналось ниже края — «пульт не отображается». Замер на стенде:
+    при 1280×800, 1366×768 и 1600×900 из управления без прокрутки было видно 0 точек.
+    Колонки теперь выбираются по ширине САМОГО пульта, а не окна: если управлению хватает его
+    300 точек и камере остаётся от 240 — две колонки, как на широком экране (управление слева,
+    камера справа). 594 = 300 + 240 + промежуток 18 + поля 36; ширина — в точках самого пульта
+    (на 1366×768 это 623: кроме zoom 1.196 страницу масштабирует обёртка).
+    Камера при этом остаётся 16:9 вверху своей колонки (правило выше, в медиазапросе), а не
+    тянется на высоту колонки управления: в высоком месте кадр по центру ушёл бы за низ пульта.
+    Пульт уже — одна колонка, как раньше, но камера не выше, чем оставляет место хотя бы первому разделу управления:
+    высота правой половины (--u3-right-h из app.js, уже с поправкой на zoom, поэтому без vh)
+    минус шапка пульта, вкладки «Камера/Деталь» и около 180 точек управления. Меньше 160 точек
+    камера не становится. Окна от 1600 точек не затронуты: там две колонки и прежде. */
+html.ui3-mode .projects-pane > section.ui3-pp { container: ui3pp / inline-size; }
+@media (max-width: 1599px) {
+  @container ui3pp (min-width: 594px) {
+    html.ui3-mode .ui3-pp-body { grid-template-columns: minmax(300px, 1fr) minmax(0, 384px); }
+    html.ui3-mode .ui3-pp-view { order: 0; }
+    /*  Колонка камеры здесь бывает уже 270 точек: строка «Камера / Деталь / ЭФИР / во весь экран»
+        и подпись «готово к …» переносятся, а не вылезают за пульт (замер: при тексте 130 %
+        на окне 1366×768 они уходили на 38 точек вправо). */
+    html.ui3-mode .ui3-pp-vbar { flex-wrap: wrap; row-gap: 6px; }
+    html.ui3-mode .ui3-pp-tline { flex-wrap: wrap; row-gap: 4px; }
+  }
+  @container ui3pp (max-width: 593.98px) {
+    html.ui3-mode .ui3-pp-view .ui3-camslot,
+    html.ui3-mode .ui3-pp-view .ui3-pp-part { max-height: max(160px, calc(var(--u3-right-h, 100000px) - 330px)); }
+  }
+  /*  16.10.2026 (R-111, второй снимок обхода 08.10.2026): вид «Дашборд» с открытым пультом. Колонка
+      принтеров здесь 46 % (R-107, правило выше), и на окне 1366×768 пульту оставалось 571 точка —
+      одна колонка, а управление начиналось ниже края пульта (замер: 0 точек управления без
+      прокрутки). Замер 40 %: пульт 581 точка — всё ещё одна колонка. 34 % (не уже 360 точек, как
+      колонка обычного вида) дают на 1366×768 ту же ширину, что в обычном виде, — две колонки. */
+  html.ui3-mode.ui3-dash-pp .left-col { width: 34% !important; flex: 0 0 34% !important; min-width: 360px !important; }
+}

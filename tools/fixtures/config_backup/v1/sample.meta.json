@@ -1,0 +1,44 @@
+{
+  "byte_length": 2410,
+  "created_at": "2026-07-24 00:00:00",
+  "expected": {
+    "container_format_version": 1,
+    "core_machine_bound": {
+      "archive_dir": "E:\\FrozenFixture\\archive",
+      "data_dir": "D:\\FrozenFixture\\data",
+      "server_port": 8000,
+      "slicer_path": "C:\\Program Files\\Orca\\orca-slicer.exe"
+    },
+    "core_values": {
+      "lan_access_enabled": true,
+      "modules_disabled": [
+        "quality"
+      ],
+      "net_monitor": true,
+      "printer_files_delete_enabled": true,
+      "printer_files_read_enabled": true,
+      "project_print_enabled": true,
+      "security_enabled": true,
+      "slicer_callback_enabled": true
+    },
+    "payload_schema_version": 1,
+    "printer_adapters": {
+      "fixture-bambu-x1c": "bambu",
+      "fixture-ff-ad5m": "flashforge",
+      "fixture-moonraker-v2": "klipper"
+    },
+    "printer_ids": [
+      "fixture-bambu-x1c",
+      "fixture-ff-ad5m",
+      "fixture-moonraker-v2"
+    ],
+    "printer_tokens": {
+      "fixture-bambu-x1c": "FIXTURE_BAMBU_ACCESS_CODE",
+      "fixture-ff-ad5m": "FIXTURE_FF_CHECKCODE",
+      "fixture-moonraker-v2": "FIXTURE_MOONRAKER_APIKEY"
+    }
+  },
+  "note": "FROZEN v1 fixture — NEVER regenerate or modify. Permanent restore contract.",
+  "passphrase": "3diwell-frozen-v1-fixture-passphrase",
+  "sha256": "bc778172e166825ad1ff215e50f780a95103ab3c18843ad09d07f9cfb22ff19c"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "camera_wall",
+  "ru": "Видеостена",
+  "en": "Camera Wall",
+  "version": "0.4.4",
+  "icon": "camera",
+  "entry": "web/CameraWallPanel.js"
+}

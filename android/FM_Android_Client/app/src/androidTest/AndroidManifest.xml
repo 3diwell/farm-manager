@@ -1,0 +1,3 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <instrumentation android:name="ru.threediwell.fm.ui.GlassUiInstrumentation" android:targetPackage="ru.threediwell.fm.mobile.prototype" android:label="FM local glass UI checks" />
+</manifest>

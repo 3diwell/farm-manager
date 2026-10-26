@@ -1,0 +1,137 @@
+{
+  "schema_version": "3diwell-ui-coverage-v1",
+  "description": "Что именно доказывают квалифицированные UI-сценарии. Отдельный источник правды, НЕ смешанный с картой риска: карта риска решает, какой профиль нужен, а эта карта — какой кусок интерфейса реально проверен. Покрытие определяется по СОДЕРЖИМОМУ изменённых участков diff, а не по имени файла: один сценарий настроек не превращается в доказательство всего web/app.js.",
+  "principles": [
+    "Каждый изменённый UI-участок обязан быть покрыт. Один покрытый участок не прячет соседний непокрытый.",
+    "Недоказанное считается непокрытым: неизвестный маркер -> UNCOVERED, а не «наверное, это про настройки».",
+    "Текст, который не проверяет ни одна assertion, покрытым функциональным UI не считается.",
+    "Новый интерактивный элемент внутри панели не покрывается автоматически: сценарий его не нажимает."
+  ],
+  "ui_paths": [
+    "web/**",
+    "modules/*/web/**"
+  ],
+  "coverage_units": [
+    {
+      "id": "settings_panel_shell",
+      "title": "Оболочка экрана настроек: открытие, отрисовка контейнера, штатное закрытие",
+      "paths": [
+        "web/app.js",
+        "web/index.html",
+        "web/app.css"
+      ],
+      "required_scenarios": [
+        "settings_panel_open_close",
+        "settings_panel_open_close_isolated"
+      ],
+      "qualified_scenarios": [
+        "settings_panel_open_close",
+        "settings_panel_open_close_isolated"
+      ],
+      "covered_selectors": [
+        "#app",
+        "#fm-boot-fallback",
+        "section.fm-settings-workspace",
+        ".fm-set-title",
+        ".fm-set-x",
+        "[data-tour=\"settings\"]",
+        ".fm-tour-div-11"
+      ],
+      "covered_actions": [
+        "клик по шестерёнке открывает экран настроек",
+        "клик по кнопке закрытия возвращает исходное состояние"
+      ],
+      "covered_assertions": [
+        "корневой контейнер приложения виден",
+        "заглушка загрузки исчезла",
+        "экран настроек закрыт до действия и после обратного действия",
+        "шестерёнка доступна пользователю",
+        "экран настроек виден после клика",
+        "заголовок экрана содержит «Настройки»/«Settings»",
+        "role контейнера равен region",
+        "оверлей тура не перекрывает экран"
+      ],
+      "allowed_hunk_markers": [
+        "openSettings",
+        "closeSettings",
+        "showSettings",
+        "fm-settings-workspace",
+        "fm-set-title",
+        "fm-set-x",
+        "data-tour=\"settings\"",
+        "data-help=\"settings\"",
+        "fm-header-settings-v270",
+        "fm-boot-fallback"
+      ],
+      "required_hunk_context": [
+        "fm-settings-workspace",
+        "fm-set-title",
+        "fm-set-x",
+        "const openSettings",
+        "const closeSettings",
+        "showSettings"
+      ],
+      "forbidden_hunk_markers": [
+        "fm-set-nav",
+        "fm-set-scroll",
+        "fm-set-layout",
+        "fm-set-group",
+        "fm-set-item",
+        "fm-set-act",
+        "fm-set-ctl",
+        "fm-set-sec",
+        "fm-set-mod",
+        "fm-set-select",
+        "settingsTab",
+        "curSetTab",
+        "setBackdropClose",
+        "setWin",
+        "setSticky",
+        "fmCloseNested",
+        "fmModalTop",
+        "fm-overlay-root",
+        "showModal",
+        "fm-header-desktop",
+        "app-header",
+        "fm-header-h",
+        "activeModuleId",
+        "viewMode",
+        "queue",
+        "sendJobs",
+        "printStart",
+        "dispatch",
+        "reserved_printer_ids",
+        ":root",
+        "--fm-",
+        "palette.css",
+        "sizes.css",
+        "tailwind"
+      ],
+      "new_control_markers": [
+        "@click",
+        "v-on:click",
+        "addEventListener(",
+        "<button",
+        "data-tour=",
+        "v-model"
+      ],
+      "unsupported_changes": [
+        "содержимое панели: вкладки, разделы, группы, элементы управления, установка модулей",
+        "закрытие кликом по затемнению (setBackdropClose) — сценарий жмёт только крестик",
+        "геометрия окна настроек и липкая навигация (setWin*, setSticky*)",
+        "общий менеджер оверлеев и стек модальных окон",
+        "верхняя панель, навигация между экранами, маршрутизация",
+        "глобальные CSS-токены и вендорные стили",
+        "любые изменения backend и API"
+      ],
+      "coverage_limitations": [
+        "проверена ОБОЛОЧКА экрана, а не его содержимое",
+        "проверен один язык интерфейса из двух возможных вариантов текста",
+        "адаптивность, зум и раскладка не проверяются",
+        "статический сценарий не доказывает поведение backend; это делает изолированный",
+        "изолированный экземпляр всегда свежий: поведение на данных владельца не проверено"
+      ],
+      "forbidden_note": "showDiag и showPrinterFiles намеренно НЕ запрещены: они вызываются внутри openSettings, уводя соседний экран из того же слота. Изменение самих этих экранов покрытым не станет — их строки не содержат разрешённых маркеров и не стоят внутри оболочки настроек."
+    }
+  ]
+}

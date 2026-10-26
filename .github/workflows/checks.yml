@@ -1,0 +1,52 @@
+# Проверки открытого репозитория FM (подготовлено 26.09.2026; включается только после публикации).
+#
+# Процесс ТОЛЬКО проверяет: ничего не публикует, не собирает выпуск, не имеет доступа к ключам
+# подписи, издателю лицензий и закрытым репозиториям. Права — только чтение. Запросы изменений из
+# форков проверяются этим же процессом без секретов.
+# Перед включением закрепите сторонние действия полным хешем коммита вместо тега (@v4 -> @<sha>).
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Зависимости сервера
+        run: python -m pip install -r requirements.txt
+      - name: Синтаксис Python
+        run: python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('.', quiet=1, maxlevels=20) else 1)"
+      - name: Синтаксис JavaScript
+        shell: pwsh
+        run: |
+          $bad = 0
+          Get-ChildItem -Recurse -Include *.js,*.mjs -Path web,modules,examples,tools | Where-Object { $_.FullName -notmatch '\\vendor\\' } | ForEach-Object {
+            node --check $_.FullName; if ($LASTEXITCODE -ne 0) { $bad++ }
+          }
+          exit $bad
+      - name: Основа лицензирования и состав
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python tools/test_licensing_foundation.py
+          python tools/test_module_version_tolerance.py
+          python tools/test_module_management_settings.py
+          python tools/test_route_policy_registry.py
+          python tools/test_route_count_baselines.py
+          python tools/test_select_profile.py

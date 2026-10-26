@@ -1,0 +1,9 @@
+toolchain/
+.gradle/
+**/build/
+local.properties
+server/staged/
+server/__pycache__/
+tests/__pycache__/
+dist/
+*.keystore

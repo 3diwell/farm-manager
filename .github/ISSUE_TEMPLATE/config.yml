@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Уязвимость / Security vulnerability
+    url: https://t.me/Sup3DiwellBot
+    about: Не публикуйте уязвимость в обращениях — напишите в техподдержку лично (SECURITY.md). / Report privately (SECURITY.md).

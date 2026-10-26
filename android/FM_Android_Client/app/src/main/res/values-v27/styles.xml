@@ -1,0 +1,9 @@
+<resources>
+    <style name="FmDark" parent="FmDarkBase">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+    <style name="FmLight" parent="FmLightBase">
+        <item name="android:navigationBarColor">#F3F4F6</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2025-2026 3DiWell Team
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at
+// https://mozilla.org/MPL/2.0/.
+export default {
+  "schemaVersion": 11,
+  "meta": {
+    "name": "UI 3.0 Ambient Flow",
+    "nameEn": "UI 3.0 Ambient Flow",
+    "author": "3DIWELL appearance prototype",
+    "description": "Спокойная тёмная тема в стилистике штатного UI 3.0 с тремя вариантами живого фона, адаптивным бликом карточек и обязательной Workflow Safe совместимостью.",
+    "descriptionEn": "A calm dark theme inspired by the standard UI 3.0 with three animated-background styles, adaptive card glint and mandatory Workflow Safe compatibility."
+  },
+  "dark": {
+    "accent": "#3b82f6",
+    "surfaceDeep": "#08090c",
+    "surfaceBase": "#101116",
+    "surfaceRaised": "#15171d",
+    "surfaceCard": "#191b22",
+    "surfaceControl": "#1b1e25",
+    "borderSoft": "#22252d",
+    "border": "#2b2f38",
+    "borderStrong": "#3a404c",
+    "textPrimary": "#eef1f5",
+    "textSecondary": "#b8bec8",
+    "textMuted": "#7f8794",
+    "textSubtle": "#5d6470",
+    "success": "#35d49a",
+    "warning": "#e5a313",
+    "danger": "#f5656c",
+    "headerSurface": "#25282b",
+    "headerAction": "#20242a",
+    "headerBorder": "#30343b"
+  },
+  "light": {
+    "accent": "#2563eb",
+    "surfaceDeep": "#eef1f5",
+    "surfaceBase": "#f6f7f9",
+    "surfaceRaised": "#fbfcfd",
+    "surfaceCard": "#ffffff",
+    "surfaceControl": "#ffffff",
+    "borderSoft": "#dde2e9",
+    "border": "#c8cfd8",
+    "borderStrong": "#9ca7b4",
+    "textPrimary": "#161a21",
+    "textSecondary": "#3f4650",
+    "textMuted": "#707985",
+    "textSubtle": "#959da7",
+    "success": "#23845f",
+    "warning": "#8e6c25",
+    "danger": "#b7525c",
+    "headerSurface": "#eceff3",
+    "headerAction": "#ffffff",
+    "headerBorder": "#c5d0d7"
+  },
+  "typography": {
+    "font": "segoe",
+    "textScale": 1,
+    "customFontName": "",
+    "customFontFormat": "",
+    "customFontDataUrl": ""
+  },
+  "shape": {
+    "radiusScale": 1,
+    "borderWidth": 1,
+    "shadowIntensity": 0.34,
+    "surfaceOpacity": 0.98
+  },
+  "interface": {
+    "density": "normal",
+    "reduceMotion": false,
+    "performanceMode": "balanced",
+    "highContrast": false
+  },
+  "effects": {
+    "secondaryAccent": "#6d5ce7",
+    "glowStrength": 0.12,
+    "haloStrength": 0.08,
+    "panelMaterial": "solid",
+    "edgeLighting": "active",
+    "panelTopHighlight": false,
+    "hoverLift": true,
+    "shimmerProgress": false,
+    "backgroundPattern": "none",
+    "patternOpacity": 0,
+    "ambientStrength": 0.1,
+    "tableStyle": "clean",
+    "statusStyle": "text-dot",
+    "cornerStyle": "rounded",
+    "inactiveDesaturation": 0,
+    "edgeDirection": "lower",
+    "panelDepth": 0.42,
+    "progressStyle": "glow",
+    "controlStyle": "clean",
+    "focusGlowStrength": 0.16,
+    "matteStrength": 0.92,
+    "glossStrength": 0.08,
+    "panelAiriness": 0.28,
+    "animatedBackground": "subtle",
+    "backgroundAnimationStyle": "flow",
+    "backgroundMixedStyle": "flow",
+    "backgroundFlowUseThemeColors": true,
+    "backgroundFlowPrimary": "#3b82f6",
+    "backgroundFlowSecondary": "#6d5ce7",
+    "backgroundFlowSpeed": 0.2,
+    "backgroundFlowOpacity": 0.13,
+    "backgroundFlowBlur": 0.78,
+    "backgroundFlowScale": 0.64,
+    "backgroundStreamCount": 12,
+    "backgroundFlowMix": 1,
+    "backgroundStreamsMix": 1,
+    "hoverGlintPrinters": true,
+    "hoverGlintProjects": true,
+    "hoverGlintIntensity": 1,
+    "hoverGlintDuration": 6.2,
+    "microAccentIntensity": 0.2
+  },
+  "paletteEffects": {
+    "separate": false,
+    "darkBrightness": 0.13,
+    "lightBrightness": 0.13,
+    "darkOpacity": 0.98,
+    "lightOpacity": 0.98,
+    "darkGlow": 0.12,
+    "lightGlow": 0.12,
+    "darkHalo": 0.08,
+    "lightHalo": 0.08
+  },
+  "background": {
+    "mode": "solid",
+    "imageDataUrl": "",
+    "overlay": "#05060a",
+    "overlayOpacity": 0.18,
+    "blurPx": 0
+  }
+};

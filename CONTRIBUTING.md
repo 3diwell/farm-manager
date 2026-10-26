@@ -1,0 +1,72 @@
+# Как участвовать в 3DIWELL Farm Manager
+
+Спасибо, что хотите помочь. Ниже — как сообщить об ошибке, предложить изменение и проверить его.
+
+## Сообщить об ошибке
+
+Откройте обращение (Issue) по шаблону «Ошибка». Укажите версию программы (окно «О программе»),
+модель и прошивку принтера, что вы делали, что ожидали и что получили. Снимок экрана и журнал
+помогают.
+
+**Прежде чем прикладывать журнал или резервную копию**, уберите из них секреты: коды доступа
+принтеров, серийные номера, адреса вашей сети, пароли, токены ботов, файлы лицензий. Журналы и
+резервные копии FM по умолчанию содержат такие сведения. Об уязвимостях — не в обращениях, а как
+описано в [SECURITY.md](SECURITY.md).
+
+## Предложить изменение
+
+1. Для заметного изменения сначала откройте обращение и опишите замысел — так проще договориться
+   до того, как написан код.
+2. Сделайте форк и ветку, внесите изменение, добавьте или поправьте проверку в `tools/`.
+3. Прогоните проверки (ниже) и откройте запрос на слияние (Pull Request) по шаблону.
+
+Сопровождающие проекта проверяют и принимают изменения и выпускают официальные сборки. Форк
+остаётся вашим: MPL 2.0 это разрешает, а в официальный выпуск изменение попадает после принятия.
+
+## Лицензия вклада
+
+Проект распространяется по [MPL 2.0](LICENSE). Присылая изменение, вы подтверждаете, что имеете
+право передать его по этой лицензии (раздел 2.5 MPL) и что оно распространяется по MPL 2.0.
+Передачи авторских прав проект не требует. Не добавляйте чужой код, шрифты, изображения и
+программы без указания их лицензии и без права на распространение; сторонний компонент
+вносится в [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+В новых собственных исходных файлах в начале ставится уведомление:
+
+```text
+SPDX-License-Identifier: MPL-2.0
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+If a copy of the MPL was not distributed with this file, You can obtain one at
+https://mozilla.org/MPL/2.0/.
+```
+
+## Проверки
+
+- Синтаксис: `python -m py_compile <файл>` для Python, `node --check <файл>` для JavaScript.
+- Подбор проверок под изменённые файлы: `python tools/validation/select_profile.py --working-tree`
+  — выводит список наборов; прогоните его целиком.
+- Отдельный набор: `python tools/test_<имя>.py`.
+
+Подробнее — [docs/dev/testing.md](docs/dev/testing.md).
+
+## Правила, которые важны для живой фермы
+
+- Реальные команды принтерам (запуск печати, движение, G-code) проверки не отправляют; новые
+  проверки — тоже.
+- Изменение схемы базы данных, списания филамента, очереди печати и резервного копирования
+  требует отдельной проверки и описания в запросе.
+- Секреты, адреса настоящих принтеров и персональные данные в репозиторий не добавляются, в
+  том числе в тестовые данные: только выдуманные значения (`FIXTURE_…`, адреса 192.0.2.x).
+
+---
+
+# Contributing (English)
+
+Report bugs with the "Bug" issue template (program version, printer model and firmware, steps).
+Remove secrets from logs and backups first: FM logs and backups contain printer access codes,
+serials, network addresses and tokens by default. Report vulnerabilities privately (SECURITY.md).
+Discuss notable changes in an issue first, then open a pull request with tests. Contributions are
+accepted under the MPL 2.0; you confirm you have the right to submit them (MPL section 2.5). No
+copyright assignment is required. New first-party source files start with the MPL 2.0 notice
+shown above. Checks: `python tools/validation/select_profile.py --working-tree` lists the suites
+to run for your change.

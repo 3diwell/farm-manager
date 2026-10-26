@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Farm Manager</string>
+    <string name="intro_continue">Continue</string>
+    <string name="intro_setting_title">Welcome screen</string>
+    <string name="intro_setting_hint">Logo animation and greeting at launch. Turn it off to connect immediately. Applies from the next launch.</string>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <style name="FmLaunch" parent="FmDark">
+        <item name="android:windowSplashScreenBackground">#18181B</item>
+        <!-- Explicit drawable prevents Android from falling back to the launcher icon. -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/intro_splash_empty</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#18181B</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+</resources>

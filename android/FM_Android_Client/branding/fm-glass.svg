@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Approved glass variant 3. Original favicon geometry; only fills and a silhouette-clipped highlight change. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 5900.75 5900.75">
+<defs>
+<linearGradient id="fm-review-glass-rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbf2ff"/><stop offset=".22" stop-color="#80c9ff"/><stop offset=".48" stop-color="#4da6ff"/><stop offset=".72" stop-color="#347ee8"/><stop offset="1" stop-color="#8ecfff"/></linearGradient>
+<linearGradient id="fm-review-glass-core" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#435b70"/><stop offset=".4" stop-color="#23374d"/><stop offset="1" stop-color="#162333"/></linearGradient>
+<linearGradient id="fm-review-satin-letter" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#cfdeee"/></linearGradient>
+<linearGradient id="fm-review-glint" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#ffffff" stop-opacity=".43"/><stop offset=".37" stop-color="#ffffff" stop-opacity=".10"/><stop offset=".385" stop-color="#ffffff" stop-opacity=".24"/><stop offset=".405" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+<path id="fm-review-original-rim" d="M726.26 0.01l4448.25 0c399.43,0 726.25,326.8 726.25,726.25l0 95.48 -739.21 786.43 0 -324.66c0,-299.36 -244.93,-544.29 -544.3,-544.29l-3333.74 0c-299.36,0 -544.29,244.92 -544.29,544.29l0 1289.83 600.02 0 371.44 0c17.18,0 31.27,14.09 31.27,31.27l0 327.18 -4.1 40.94c-27.82,193.6 -194.63,343.85 -395.23,345.52l0 1.74 -603.4 0 0 1297.26c0,299.36 244.92,544.3 544.29,544.3l542.38 0 -694.09 739.21 -405.54 0c-399.44,0 -726.25,-326.81 -726.25,-726.25l0 -4448.25c0,-399.44 326.8,-726.25 726.25,-726.25zm1376.76 5161.53l2514.23 0c299.36,0 544.3,-244.93 544.3,-544.3l0 -2713.17 739.21 -787.29 0 4057.72c0,399.43 -326.81,726.25 -726.25,726.25l-3765.56 0 694.07 -739.21z"/>
+<clipPath id="fm-review-original-clip"><rect x="739.22" y="739.22" width="4422.32" height="4422.32" rx="527.98" ry="544.29"/><use href="#fm-review-original-rim"/></clipPath>
+</defs>
+
+        <rect x="739.22" y="739.22" width="4422.32" height="4422.32" rx="527.98" ry="544.29" fill="url(#fm-review-glass-core)" stroke="#252a31" stroke-width="19.91"/>
+        <use href="#fm-review-original-rim" fill="url(#fm-review-glass-rim)"/>
+        <path fill="url(#fm-review-satin-letter)" d="M4579.42 2503.82l-335.28 359.54 0 1408.83c0,112.41 91.55,203.95 203.95,203.95l220.27 0c112.41,0 203.94,-91.54 203.94,-203.95l0 -1559.3c0,-115.22 -93.84,-209.06 -209.06,-209.06l-83.83 0z"/>
+        <path fill="url(#fm-review-satin-letter)" d="M2720.76 2597.16l448.17 480.6c67.21,83.84 168.55,133.13 276.48,133.13l60.1 0c107.96,0 209.32,-49.32 276.53,-133.19l941.38 -1009.51c115.54,-123.91 108.71,-319.46 -15.18,-435.01l-9.21 -8.58c-123.91,-115.56 -319.48,-108.72 -435.03,15.18l-788.55 845.62 -806.58 -864.97c-8.22,-9.22 -17.26,-17.69 -27.04,-25.24l-3.3 -2.55 -1.39 -0.99 -1.93 -1.42 -6.19 -4.33 -0.99 -0.56c-0.55,-0.36 -1.1,-0.71 -1.64,-1.07l-1.11 -0.71 -0.76 -0.46 -2.77 -1.72 -1.31 -0.76c-31.39,-18.57 -67.12,-28.37 -103.62,-28.37l-220.28 0c-112.38,0 -203.94,91.51 -203.94,203.88l0 2521.06c0,112.38 91.58,203.88 203.94,203.88l220.28 0c112.38,0 203.94,-91.51 203.94,-203.88l0 -1680.06z"/>
+        <rect width="5900.75" height="5900.75" fill="url(#fm-review-glint)" clip-path="url(#fm-review-original-clip)" opacity="0.65"/>
+      
+</svg>

@@ -1,0 +1,29 @@
+<resources>
+    <style name="FmLaunch" parent="FmDark" />
+    <style name="FmDark" parent="FmDarkBase" />
+    <style name="FmLight" parent="FmLightBase" />
+    <style name="FmDarkBase" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#4DA6FF</item>
+        <item name="android:windowBackground">#18181B</item>
+        <item name="android:navigationBarColor">#18181B</item>
+        <item name="android:statusBarColor">#18181B</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorControlNormal">#AEB5C1</item>
+        <item name="android:colorControlActivated">#4DA6FF</item>
+        <item name="android:colorControlHighlight">#334DA6FF</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+    <style name="FmLightBase" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#1769AA</item>
+        <item name="android:windowBackground">#F3F4F6</item>
+        <item name="android:navigationBarColor">#18181B</item>
+        <item name="android:statusBarColor">#F3F4F6</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorControlNormal">#59616D</item>
+        <item name="android:colorControlActivated">#1769AA</item>
+        <item name="android:colorControlHighlight">#331769AA</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

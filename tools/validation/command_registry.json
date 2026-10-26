@@ -1,0 +1,210 @@
+{
+  "schema_version": "3diwell-command-registry-v1",
+  "description": "Белый список команд, которые исполнителю профиля разрешено запускать. Исполнитель НЕ берёт строку из плана и НЕ передаёт её оболочке: он выбирает command_id отсюда и подставляет проверенные значения в argv-массив. Всё, чего здесь нет, выполнено быть не может. shell не используется никогда: shell=True запрещён, пайпы, &&, ||, > и < невозможны, потому что аргументы не проходят через оболочку.",
+  "placeholders": {
+    "{python}": "sys.executable текущего интерпретатора; из ввода не берётся никогда",
+    "{node}": "node, найденный в PATH или по известному пути установки; иначе шаг откладывается",
+    "{file}": "изменённый файл: обязан существовать, лежать внутри репозитория и совпасть по расширению",
+    "{test}": "путь теста: обязан быть в test_catalog.json и иметь safe_for_* = true"
+  },
+  "forbidden": [
+    "любая оболочка: cmd.exe, powershell, pwsh, sh",
+    "shell=True",
+    "пайпы и перенаправления: | && || > <",
+    "build.bat, PyInstaller, ISCC и любая сборка",
+    "браузер: msedge, chrome, CDP, UI harness",
+    "mutation proof",
+    "tools/release_gate.py",
+    "серверы и сетевые подключения",
+    "команды принтерам"
+  ],
+  "commands": [
+    {
+      "command_id": "fast.py_compile",
+      "argv": [
+        "{python}",
+        "-m",
+        "py_compile",
+        "{file}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "FAST",
+        "TARGETED",
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 60,
+      "components": [
+        "*"
+      ],
+      "source": "stdlib py_compile",
+      "param": "file",
+      "param_extensions": [
+        ".py"
+      ],
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Синтаксис изменённого Python-файла. Байткод пишется в __pycache__ рядом с исходником — это единственная запись, и она не меняет продукт."
+    },
+    {
+      "command_id": "fast.node_check",
+      "argv": [
+        "{node}",
+        "--check",
+        "{file}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "FAST",
+        "TARGETED",
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 60,
+      "components": [
+        "*"
+      ],
+      "source": "node --check",
+      "param": "file",
+      "param_extensions": [
+        ".js",
+        ".mjs"
+      ],
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Синтаксис изменённого JavaScript-файла. Код не исполняется — только разбор."
+    },
+    {
+      "command_id": "fast.json_check",
+      "argv": [
+        "{python}",
+        "tools/validation/_json_check.py",
+        "{file}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "FAST",
+        "TARGETED",
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 60,
+      "components": [
+        "*"
+      ],
+      "source": "tools/validation/_json_check.py",
+      "param": "file",
+      "param_extensions": [
+        ".json"
+      ],
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Разбор изменённого JSON стандартной библиотекой. Только чтение."
+    },
+    {
+      "command_id": "fast.doc_check",
+      "argv": [
+        "{python}",
+        "tools/validation/_doc_check.py",
+        "{file}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "FAST",
+        "TARGETED",
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 60,
+      "components": [
+        "*"
+      ],
+      "source": "tools/validation/_doc_check.py",
+      "param": "file",
+      "param_extensions": [
+        ".md"
+      ],
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Структурная проверка документа: относительные ссылки ведут в существующие файлы. Продукт не затрагивается."
+    },
+    {
+      "command_id": "targeted.python_test",
+      "argv": [
+        "{python}",
+        "{test}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "TARGETED",
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 600,
+      "components": [
+        "*"
+      ],
+      "source": "существующий тест репозитория",
+      "param": "test",
+      "param_extensions": [
+        ".py"
+      ],
+      "requires_catalog_flag": "safe_for_targeted",
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Существующий Python-тест, безопасность которого доказана каталогом. Небезопасный тест этой командой запущен быть не может."
+    },
+    {
+      "command_id": "subsystem.python_test",
+      "argv": [
+        "{python}",
+        "{test}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 600,
+      "components": [
+        "*"
+      ],
+      "source": "существующий тест репозитория",
+      "param": "test",
+      "param_extensions": [
+        ".py"
+      ],
+      "requires_catalog_flag": "safe_for_subsystem",
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Существующий Python-тест подсистемы, безопасность которого доказана каталогом."
+    },
+    {
+      "command_id": "targeted.node_test",
+      "argv": [
+        "{node}",
+        "{test}"
+      ],
+      "cwd": ".",
+      "allowed_profiles": [
+        "TARGETED",
+        "SUBSYSTEM"
+      ],
+      "timeout_seconds": 120,
+      "components": [
+        "*"
+      ],
+      "source": "существующий тест репозитория",
+      "param": "test",
+      "param_extensions": [
+        ".mjs"
+      ],
+      "requires_catalog_flag": "safe_for_targeted",
+      "writes_allowed": false,
+      "browser_allowed": false,
+      "network_allowed": false,
+      "description": "Существующий MJS-тест. На этапе 2B ни один .mjs безопасным не признан: JS разбирается только текстом, поэтому такие шаги откладываются."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "byte_length": 4538,
+  "container_format_version": 2,
+  "defect_shape": {
+    "expected_new_behavior": "tolerated + dangling_internal_ref warning + record preserved",
+    "field_paths": [
+      "module_data.inventory.domain_data.tables.inv_items[].location_id",
+      "module_data.inventory.domain_data.tables.inv_spools[].location_id"
+    ],
+    "reason_old": "validation_failed",
+    "unresolved_target": "inv_locations"
+  },
+  "file": "dangling_ref_v2.3diwell-backup",
+  "note": "SANITIZED regression fixture (Alpha 2.830). Reproduces the SHAPE of the Alpha 2.829 validation_failed defect: internal reference to a DELETED entity (inv_items.location_id / inv_spools.location_id -> missing inv_locations row). Synthetic IDs/names/credentials only. Compatibility regression fixture, NOT a new container format. NEVER regenerate or modify.",
+  "payload_schema_version": 2,
+  "protection_mode": "none",
+  "requires_password": false,
+  "sha256": "1fb5f408eab492e281874d26c2f80899667266d83c27d284585bffe0ac8e0b4a"
+}

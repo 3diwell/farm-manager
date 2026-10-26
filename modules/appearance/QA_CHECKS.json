@@ -1,0 +1,107 @@
+{
+  "module": "appearance",
+  "version": "0.17.2",
+  "date": "2026-09-07",
+  "base_version": "0.17.1",
+  "schema_version": 12,
+  "original_fields_preserved": 86,
+  "logic": {
+    "passed": 17,
+    "checks": [
+      "Every original field is mapped exactly once",
+      "Four sections; all detail groups belong to valid sections",
+      "At most four primary field descriptors per settings section",
+      "Hover glints and progress shimmer are grouped with cards",
+      "Default, installed and all four built-in themes validate",
+      "Field limits, types, options and enabling predicates are preserved",
+      "Field read/write roundtrip preserves other theme data",
+      "Separate profile edits do not leak into the other palette",
+      "Merging profiles retains the explicitly selected palette",
+      "Combined glint shortcut changes only its two enable flags",
+      "Independent mix and shadow values survive JSON roundtrip",
+      "Draft roundtrip",
+      "Collection, applied history and collection import roundtrip",
+      "All fields have readable group-summary values",
+      "Personal installable ZIP generation",
+      "Complete local JavaScript import graph",
+      "Curated presets validate, are distinct, have independent copies and do not inherit installed settings"
+    ]
+  },
+  "browser": {
+    "environment": "Isolated headless Google Chrome with the Vue build from the supplied FM; no live FM or printer connections",
+    "passed": 20,
+    "console_errors_or_warnings": [],
+    "checks": [
+      "initial render, four sections, preview and collapsed tools",
+      "colors: four main controls and named closed groups",
+      "numeric edit, undo and redo",
+      "search opens moved hover group",
+      "search disabled control explains dependency",
+      "theme presets replace complete theme and undo preserves draft",
+      "palette scope and explicit profile merge",
+      "mixed background contributions stay independent",
+      "background brightness above old slider range is preserved",
+      "save, rename, delete and restore personal copy",
+      "export JSON includes hidden values and imports safely",
+      "personal ZIP export from live editor",
+      "apply, reload and saved collection persist",
+      "unapplied draft persists across reopen",
+      "preview in host, compare, return and end preview",
+      "sample checks are interactive and do not alter theme",
+      "tablet and phone layout has no horizontal overflow",
+      "English labels render",
+      "preview has no clipped content or internal scroll at all tested widths",
+      "all four curated themes render both palettes without applying and without scroll"
+    ]
+  },
+  "package": {
+    "checks_passed": [
+      "CRC, unique safe paths, appearance root folder and versioned entry manifest",
+      "All relative imports and referenced module resources are included",
+      "Both programmatic and browser-generated personal ZIPs pass structure checks",
+      "All previous web files except runtime integration, module version and package source list are byte-identical to 0.17.1",
+      "Fresh installation by the exact supplied FM installer function in a separate test directory",
+      "Update installation by the same function in that test directory; restart flag returned"
+    ]
+  },
+  "not_tested": [
+    "Installation into the user's live FM process",
+    "Interaction with every UI 3.0 window and third-party module",
+    "Printer operations or inventory deduction",
+    "GPU-dependent optical refraction quality and low-end device performance",
+    "New uploads of user-specific font files and images in this browser run; those handlers and storage formats were retained"
+  ],
+  "scope": "Thin printer progress path follows computed card corners and CSS dimensions, without pulse or glow. Core values, projects and saved themes are unchanged. Previous glass fix retained.",
+  "printer_progress": {
+    "passed": 36,
+    "errors": [],
+    "checks": [
+      "Active cards only, no duplicate project outline; 1.6px line without glow or pulse",
+      "Vue progress updates, exact zero source, closed 100% and unchanged displayed values",
+      "All four presets in both palettes",
+      "Radii 0/3/8/20/40, asymmetric corners, percent/elliptical corners and content-box borders",
+      "Root zoom 0.85/1/1.04/1.25, nested zoom, fractional card size, viewport resize and scroll",
+      "Card clicks pass through; Vue start/stop/add/remove/reorder creates no orphan overlays",
+      "No continuous outline DOM mutations; disabling restores native line and cleans up; re-enabling is idempotent"
+    ],
+    "environment": "Isolated Chrome, actual supplied Vue, test cards matching FM markup and legacy ring CSS; no live printer connections"
+  },
+  "previous_report": "QA_PREVIOUS_PROTOTYPE29.json is the original author's report, not a claim that all 55 original tests were rerun.",
+  "glass_regression": {
+    "passed": 10,
+    "checks": [
+      "reproduced original offset with real FM html zoom and ambient inset",
+      "aligned glass geometry at root zoom 1",
+      "aligned glass geometry at root zoom 1.04",
+      "aligned glass geometry at root zoom 0.85",
+      "aligned glass geometry at root zoom 1.25",
+      "nested zoom change",
+      "scroll position synchronization",
+      "scroll-container clipping retained",
+      "blur and optical refraction remain enabled",
+      "disposal removes layer, probe and filters"
+    ],
+    "legacyMaxOffset": 64.328125,
+    "errors": []
+  }
+}

@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2025-2026 3DiWell Team
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at
+// https://mozilla.org/MPL/2.0/.
+plugins { id 'com.android.application' }
+android {
+    namespace 'ru.threediwell.fm'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'ru.threediwell.fm.mobile.prototype'
+        minSdk 26
+        targetSdk 35
+        versionCode 35
+        versionName '0.16.0-prototype'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    // BuildConfig.VERSION_NAME is the only version text the screens and reports show.
+    buildFeatures { buildConfig true }
+    testOptions { unitTests.returnDefaultValues = true }
+}
+dependencies {
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.camera:camera-camera2:1.4.2'
+    implementation 'androidx.camera:camera-lifecycle:1.4.2'
+    implementation 'androidx.camera:camera-view:1.4.2'
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    implementation 'com.google.zxing:core:3.5.3'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}

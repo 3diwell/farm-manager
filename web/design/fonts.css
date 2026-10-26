@@ -1,0 +1,56 @@
+/* SPDX-License-Identifier: MPL-2.0
+ * SPDX-FileCopyrightText: 2025-2026 3DiWell Team
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ */
+/* ============================================================================
+   ШРИФТ 3DIWELL — здесь задаётся шрифт всего интерфейса.
+
+   КАК ПОМЕНЯТЬ ШРИФТ:
+   • Пользователь выбирает шрифт сам: «Настройки → Общие → Оформление → Шрифт».
+   • Шрифт по умолчанию — значение --fm-font ниже. На системный (есть на любом
+     компьютере) — например:   --fm-font: 'Segoe UI';     или     --fm-font: 'Arial';
+     Сохрани файл и обнови страницу в браузере (Ctrl+Shift+R).
+   • На СВОЙ шрифт из файла (.ttf / .woff2) — нужен блок @font-face (образцы ниже):
+     файл кладётся в web/design/fonts/ вместе с его лицензией.
+
+   Сейчас по умолчанию стоит '3DIWELL Wide J' — свободный шрифт (SIL OFL 1.1, файлы
+   и лицензия в web/design/fonts/). С 26.09.2026 другого шрифта по умолчанию нет.
+   ============================================================================ */
+
+/* 26.09.2026: свободные шрифты интерфейса (SIL Open Font License 1.1, см. fonts/README.md).
+   Их буквы подогнаны под место, под которое выверен интерфейс (Wide J — на 7 % крупнее прежнего
+   шрифта), а переопределение метрик строки ставит рисунок букв в середину строки. */
+@font-face{
+  font-family: '3DIWELL Wide J';
+  src: url('/design/fonts/3diwell-wide-j.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+  ascent-override: 74.5%; descent-override: 25.5%; line-gap-override: 0%;
+}
+/* Своё жирное начертание: без него жирный текст браузер раздувает сам, и буквы слипаются. */
+@font-face{
+  font-family: '3DIWELL Wide J';
+  src: url('/design/fonts/3diwell-wide-j-bold.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+  ascent-override: 74.5%; descent-override: 25.5%; line-gap-override: 0%;
+}
+@font-face{
+  font-family: '3DIWELL Wide P';
+  src: url('/design/fonts/3diwell-wide-p-regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+  ascent-override: 74.5%; descent-override: 25.5%; line-gap-override: 0%;
+}
+@font-face{
+  font-family: '3DIWELL Wide P';
+  src: url('/design/fonts/3diwell-wide-p-bold.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+  ascent-override: 74.5%; descent-override: 25.5%; line-gap-override: 0%;
+}
+
+:root{
+  --fm-font: '3DIWELL Wide J';   /* ← шрифт по умолчанию (меняй здесь) */
+}
+
+/* Применяет шрифт ко всему интерфейсу через переменную --fm-font выше. Эту строку менять не нужно. */
+*{ font-family: var(--fm-font, '3DIWELL Wide J'), sans-serif !important; }

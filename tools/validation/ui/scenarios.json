@@ -1,0 +1,426 @@
+{
+  "schema_version": "3diwell-ui-scenarios-v1",
+  "description": "Реестр UI-сценариев. Сценарий — это ДАННЫЕ, а не программа: произвольный Python, произвольный JavaScript, shell-команды, внешние URL и адреса принтеров здесь запрещены и отклоняются загрузчиком. Пользователь может выбрать сценарий только по id; передать свой URL или свою команду нельзя.",
+  "allowed_actions": [
+    "wait_for_selector",
+    "click",
+    "fill",
+    "press",
+    "set_viewport",
+    "screenshot",
+    "read_text",
+    "assert_visible",
+    "assert_hidden",
+    "assert_text",
+    "assert_attribute"
+  ],
+  "scenarios": [
+    {
+      "id": "settings_panel_open_close",
+      "title": "Корневой экран отрисован, панель настроек открывается и закрывается",
+      "application_mode": "static_harness",
+      "start_method": "stage_server",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "locale": "auto",
+      "zoom": 1,
+      "locale_note": "Язык интерфейса хранится в профиле браузера и на свежем профиле оказывается английским. Сценарий его НЕ навязывает, поэтому текстовые проверки принимают русский и английский вариант. Принудительная смена языка — задача этапа 3B.",
+      "fixture": "fm_ui_stage_default",
+      "required_selectors": [
+        "#app",
+        "[data-tour=\"settings\"]"
+      ],
+      "forbidden_selectors": [
+        "#fm-boot-fallback"
+      ],
+      "screenshot_names": [
+        "01_before.png",
+        "02_settings_open.png",
+        "03_restored.png"
+      ],
+      "console_policy": {
+        "allow_errors": false,
+        "allow_warnings": true
+      },
+      "network_policy": {
+        "allowed_hosts": [
+          "127.0.0.1",
+          "localhost"
+        ],
+        "allowed_schemes": [
+          "data:",
+          "about:",
+          "blob:"
+        ],
+        "external_attempt_is_failure": true
+      },
+      "timeout_seconds": 180,
+      "reason": "Самый детерминированный безопасный сценарий: только отрисовка корня и открытие/закрытие собственного экрана настроек. Ни принтеров, ни файлов, ни очереди, ни записи настроек владельца — панель только открывается и закрывается.",
+      "actions": [
+        {
+          "type": "wait_for_selector",
+          "selector": "#app",
+          "timeout_ms": 15000
+        },
+        {
+          "type": "assert_visible",
+          "selector": "#app"
+        },
+        {
+          "type": "assert_hidden",
+          "selector": "#fm-boot-fallback",
+          "timeout_ms": 2000
+        },
+        {
+          "type": "click",
+          "selector": "button",
+          "text_any_of": [
+            "Позже",
+            "Later"
+          ],
+          "settle_ms": 800,
+          "optional": true,
+          "note": "окно тура показывается только на свежем профиле; его отсутствие не дефект"
+        },
+        {
+          "type": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "timeout_ms": 3000
+        },
+        {
+          "type": "screenshot",
+          "name": "01_before.png"
+        },
+        {
+          "type": "assert_visible",
+          "selector": "[data-tour=\"settings\"]"
+        },
+        {
+          "type": "click",
+          "selector": "[data-tour=\"settings\"]",
+          "settle_ms": 1200
+        },
+        {
+          "type": "wait_for_selector",
+          "selector": "section.fm-settings-workspace",
+          "timeout_ms": 10000
+        },
+        {
+          "type": "assert_visible",
+          "selector": "section.fm-settings-workspace"
+        },
+        {
+          "type": "assert_text",
+          "selector": ".fm-set-title",
+          "text_any_of": [
+            "Настройки",
+            "Settings"
+          ]
+        },
+        {
+          "type": "assert_attribute",
+          "selector": "section.fm-settings-workspace",
+          "attribute": "role",
+          "expect": "region"
+        },
+        {
+          "type": "read_text",
+          "selector": ".fm-set-nav",
+          "name": "settings_nav"
+        },
+        {
+          "type": "screenshot",
+          "name": "02_settings_open.png"
+        },
+        {
+          "type": "click",
+          "selector": ".fm-set-x",
+          "settle_ms": 1000
+        },
+        {
+          "type": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "timeout_ms": 8000
+        },
+        {
+          "type": "screenshot",
+          "name": "03_restored.png"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "root_visible",
+          "kind": "assert_visible",
+          "selector": "#app",
+          "must_pass": true,
+          "why": "документ загрузился и корневой контейнер отрисован"
+        },
+        {
+          "id": "no_boot_fallback",
+          "kind": "assert_hidden",
+          "selector": "#fm-boot-fallback",
+          "must_pass": true,
+          "why": "приложение смонтировалось, а не осталось на заглушке загрузки"
+        },
+        {
+          "id": "settings_closed_initially",
+          "kind": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "исходное состояние: экран настроек закрыт"
+        },
+        {
+          "id": "gear_available",
+          "kind": "assert_visible",
+          "selector": "[data-tour=\"settings\"]",
+          "must_pass": true,
+          "why": "реальный интерактивный элемент доступен пользователю"
+        },
+        {
+          "id": "settings_opened",
+          "kind": "assert_visible",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "после клика состояние DOM изменилось ожидаемым образом"
+        },
+        {
+          "id": "settings_title",
+          "kind": "assert_text",
+          "selector": ".fm-set-title",
+          "must_pass": true,
+          "why": "открылся именно экран настроек, а не пустой контейнер"
+        },
+        {
+          "id": "settings_role",
+          "kind": "assert_attribute",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "разметка доступности сохранена"
+        },
+        {
+          "id": "settings_closed_again",
+          "kind": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "после обратного действия состояние восстановилось"
+        }
+      ]
+    },
+    {
+      "id": "settings_panel_open_close_isolated",
+      "title": "Тот же сценарий на НАСТОЯЩЕМ server.py в изолированном E2E-режиме",
+      "application_mode": "isolated_farm_manager",
+      "start_method": "isolated_server",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "locale": "en",
+      "zoom": 1,
+      "fixture": "e2e_fresh_instance",
+      "required_selectors": [
+        "#app",
+        "[data-tour=\"settings\"]"
+      ],
+      "forbidden_selectors": [
+        "#fm-boot-fallback"
+      ],
+      "screenshot_names": [
+        "01_before.png",
+        "02_settings_open.png",
+        "03_restored.png"
+      ],
+      "console_policy": {
+        "allow_errors": false,
+        "allow_warnings": true
+      },
+      "network_policy": {
+        "allowed_hosts": [
+          "127.0.0.1",
+          "localhost"
+        ],
+        "allowed_schemes": [
+          "data:",
+          "about:",
+          "blob:"
+        ],
+        "external_attempt_is_failure": true
+      },
+      "timeout_seconds": 240,
+      "reason": "Повторяет доказанный статический пилот, чтобы результаты можно было сравнить напрямую. Настоящий backend, настоящие read-only API, свежая тестовая БД. Печати, файлов принтеров, очереди и настроек владельца сценарий не касается.",
+      "actions": [
+        {
+          "type": "wait_for_selector",
+          "selector": "#app",
+          "timeout_ms": 15000
+        },
+        {
+          "type": "assert_visible",
+          "selector": "#app"
+        },
+        {
+          "type": "assert_hidden",
+          "selector": "#fm-boot-fallback",
+          "timeout_ms": 2000
+        },
+        {
+          "type": "click",
+          "selector": "button",
+          "text_any_of": [
+            "Позже",
+            "Later"
+          ],
+          "settle_ms": 800,
+          "optional": true,
+          "note": "окно тура показывается только на свежем профиле; его отсутствие не дефект"
+        },
+        {
+          "type": "click",
+          "selector": "[data-tour=\"lang\"] .ltab",
+          "settle_ms": 700,
+          "optional": true,
+          "note": "первая вкладка переключателя языка — EN; фиксирует локаль"
+        },
+        {
+          "type": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "timeout_ms": 3000
+        },
+        {
+          "type": "assert_hidden",
+          "selector": ".fm-tour-div-11",
+          "timeout_ms": 4000
+        },
+        {
+          "type": "screenshot",
+          "name": "01_before.png"
+        },
+        {
+          "type": "assert_visible",
+          "selector": "[data-tour=\"settings\"]"
+        },
+        {
+          "type": "click",
+          "selector": "[data-tour=\"settings\"]",
+          "settle_ms": 1200
+        },
+        {
+          "type": "wait_for_selector",
+          "selector": "section.fm-settings-workspace",
+          "timeout_ms": 10000
+        },
+        {
+          "type": "assert_visible",
+          "selector": "section.fm-settings-workspace"
+        },
+        {
+          "type": "assert_text",
+          "selector": ".fm-set-title",
+          "text_any_of": [
+            "Настройки",
+            "Settings"
+          ]
+        },
+        {
+          "type": "assert_attribute",
+          "selector": "section.fm-settings-workspace",
+          "attribute": "role",
+          "expect": "region"
+        },
+        {
+          "type": "read_text",
+          "selector": ".fm-set-nav",
+          "name": "settings_nav"
+        },
+        {
+          "type": "screenshot",
+          "name": "02_settings_open.png"
+        },
+        {
+          "type": "click",
+          "selector": ".fm-set-x",
+          "settle_ms": 1000
+        },
+        {
+          "type": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "timeout_ms": 8000
+        },
+        {
+          "type": "screenshot",
+          "name": "03_restored.png"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "root_visible",
+          "kind": "assert_visible",
+          "selector": "#app",
+          "must_pass": true,
+          "why": "документ загрузился и корневой контейнер отрисован"
+        },
+        {
+          "id": "no_boot_fallback",
+          "kind": "assert_hidden",
+          "selector": "#fm-boot-fallback",
+          "must_pass": true,
+          "why": "приложение смонтировалось, а не осталось на заглушке загрузки"
+        },
+        {
+          "id": "settings_closed_initially",
+          "kind": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "исходное состояние: экран настроек закрыт"
+        },
+        {
+          "id": "gear_available",
+          "kind": "assert_visible",
+          "selector": "[data-tour=\"settings\"]",
+          "must_pass": true,
+          "why": "реальный интерактивный элемент доступен пользователю"
+        },
+        {
+          "id": "settings_opened",
+          "kind": "assert_visible",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "после клика состояние DOM изменилось ожидаемым образом"
+        },
+        {
+          "id": "settings_title",
+          "kind": "assert_text",
+          "selector": ".fm-set-title",
+          "must_pass": true,
+          "why": "открылся именно экран настроек, а не пустой контейнер"
+        },
+        {
+          "id": "settings_role",
+          "kind": "assert_attribute",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "разметка доступности сохранена"
+        },
+        {
+          "id": "settings_closed_again",
+          "kind": "assert_hidden",
+          "selector": "section.fm-settings-workspace",
+          "must_pass": true,
+          "why": "после обратного действия состояние восстановилось"
+        },
+        {
+          "id": "no_overlay_blocker",
+          "kind": "assert_hidden",
+          "selector": ".fm-tour-div-11",
+          "must_pass": true,
+          "why": "экран не перекрыт оверлеем тура — клики доходят до приложения"
+        }
+      ],
+      "locale_note": "Язык фиксируется детерминированно: сценарий явным кликом переводит интерфейс в английский, а не полагается на состояние профиля."
+    }
+  ]
+}

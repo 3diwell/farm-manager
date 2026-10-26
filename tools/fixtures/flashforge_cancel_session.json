@@ -1,0 +1,21 @@
+{
+  "_comment": "Alpha 2.826 — ОБЕЗЛИЧЕННАЯ offline-fixture свежей сессии FlashForge FFA5M-1 (2026-07-24 17:10, из read-only farm.log/телеметрии). Печать существующего файла из файлового менеджера -> РУЧНАЯ остановка -> липкий терминал -> ready. Без IP/serial/credentials/абсолютных путей: имя файла синтетическое (расширение .gcode сохранено), поля /detail — минимально необходимые для воркера run_flashforge. Сырой статус прошивки после Stop = 'cancel'/'cancelled' (ОТЛИЧАЕТСЯ от 'error'), что и есть доказанный адаптерный сигнал отмены.",
+  "adapter": "flashforge",
+  "printer_short_id": "node_xxxxx",
+  "session_short_id": "f563xxxx",
+  "run_short_id": "ca1e26xx",
+  "file_synthetic": "sample_part_25m.gcode",
+  "detail_sequence": [
+    { "t": "17:10:12", "note": "idle до старта",            "detail": { "status": "ready",    "printProgress": 0.0,  "printFileName": "" } },
+    { "t": "17:10:18", "note": "старт из менеджера",         "detail": { "status": "printing", "printProgress": 0.02, "printFileName": "sample_part_25m.gcode" } },
+    { "t": "17:10:22", "note": "печать идёт",                "detail": { "status": "printing", "printProgress": 0.11, "printFileName": "sample_part_25m.gcode" } },
+    { "t": "17:10:28", "note": "РУЧНАЯ остановка (terminal)", "detail": { "status": "cancel",   "printProgress": 0.11, "printFileName": "sample_part_25m.gcode" } },
+    { "t": "17:10:30", "note": "липкий cancelled (повтор)",  "detail": { "status": "cancelled","printProgress": 0.11, "printFileName": "sample_part_25m.gcode" } },
+    { "t": "17:15:31", "note": "липкий cancelled (повтор)",  "detail": { "status": "cancelled","printProgress": 0.11, "printFileName": "sample_part_25m.gcode" } },
+    { "t": "17:21:00", "note": "принтер вернулся в покой",   "detail": { "status": "ready",    "printProgress": 0.0,  "printFileName": "" } }
+  ],
+  "expected": {
+    "on_cancel_and_after": { "outcome": "cancelled", "device_error": null, "card_status": "IDLE", "alert": false, "counter_delta": 0 },
+    "real_error_variant":  { "raw_status": "error", "outcome": "failed", "device_error": "FAILED", "card_status": "FAILED", "alert": true }
+  }
+}

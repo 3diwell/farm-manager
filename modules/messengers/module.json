@@ -1,0 +1,9 @@
+{
+  "id": "messengers",
+  "ru": "Уведомления в мессенджеры",
+  "en": "Messenger notifications",
+  "version": "0.1.10",
+  "core_contract": "0.1.8",
+  "icon": "send",
+  "settings_entry": "web/MessengersSettings.js"
+}

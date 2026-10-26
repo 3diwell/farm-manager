@@ -1,0 +1,49 @@
+Изображения принтеров в составе 3DIWELL Farm Manager
+====================================================
+
+Официальные сборки 3DIWELL Farm Manager содержат 207 изображений принтеров (папка printer_covers
+внутри программы, файлы вида «<Производитель> <Модель>_cover.png»). Программа показывает их на
+карточках принтеров.
+
+Источник:   профили принтеров слайсера OrcaSlicer, https://github.com/OrcaSlicer/OrcaSlicer,
+            каталог resources/profiles. Все 207 файлов побайтно совпадают с файлами этого
+            репозитория: 200 — с нынешними, 7 — с прежними редакциями из его истории (сверено
+            26.09.2026). Файлы не изменялись. «FLSun T1 Max» — копия изображения «FLSun T1»
+            (своего изображения T1 Max в OrcaSlicer нет; добавлено 12.10.2026).
+Лицензия:   GNU Affero General Public License, версия 3 — лицензия репозитория OrcaSlicer.
+            Полный текст лицензии — файл AGPL-3.0.txt в этой папке.
+Авторы:     участники проекта OrcaSlicer. OrcaSlicer основан на Bambu Studio (Bambu Lab), тот —
+            на PrusaSlicer (Prusa Research), а тот — на Slic3r (Alessandro Ranellucci и
+            сообщество RepRap).
+Товарные знаки: на изображениях — изделия, названия и логотипы их производителей. Эти знаки
+            принадлежат их владельцам и используются только для того, чтобы обозначить принтер.
+
+Исходный вид этих изображений — сами файлы PNG; их можно получить в репозитории OrcaSlicer по
+ссылке выше. Изображения поставляются вместе с программой отдельными файлами данных, программа
+только показывает их (совокупность — «aggregate» — в смысле раздела 5 лицензии AGPL); на
+лицензию самой программы (Mozilla Public License 2.0) это не влияет.
+
+
+Printer images in 3DIWELL Farm Manager
+======================================
+
+Official builds of 3DIWELL Farm Manager contain 207 printer images (the printer_covers folder inside
+the program, files named "<Vendor> <Model>_cover.png"), shown on printer cards.
+
+Source:     printer profiles of the OrcaSlicer slicer, https://github.com/OrcaSlicer/OrcaSlicer,
+            folder resources/profiles. All 207 files are byte-identical to files of that repository:
+            200 to current ones, 7 to earlier revisions from its history (checked 26.09.2026).
+            The files are unmodified. "FLSun T1 Max" is a copy of the "FLSun T1" image (OrcaSlicer
+            has no image of the T1 Max; added 12.10.2026).
+License:    GNU Affero General Public License, version 3 — the license of the OrcaSlicer repository.
+            The full license text is AGPL-3.0.txt in this folder.
+Authors:    OrcaSlicer contributors. OrcaSlicer is based on Bambu Studio by Bambu Lab, which is based
+            on PrusaSlicer by Prusa Research, which is based on Slic3r by Alessandro Ranellucci and
+            the RepRap community.
+Trademarks: the images show products, names and logos of their manufacturers. These marks belong to
+            their owners and are used only to identify the printer.
+
+The source form of these images is the PNG files themselves, available from the OrcaSlicer
+repository above. They are shipped with the program as separate data files that the program only
+displays (an "aggregate" in the sense of section 5 of the AGPL); this does not affect the license of
+the program itself (Mozilla Public License 2.0).

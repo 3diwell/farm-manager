@@ -1,0 +1,78 @@
+{
+ "candidate_commit": "80b5b842dd208cbaa1b534f24974c56e027ccd88",
+ "coverage_units": [
+  "settings_panel_shell"
+ ],
+ "cycles": 10,
+ "environment_policy": {
+  "engine_major": "мажорная версия движка должна совпадать",
+  "engine_patch": "изменение патча не аннулирует квалификацию, но выдаёт предупреждение",
+  "node": "мажорная версия должна совпадать",
+  "python": "major.minor должны совпадать",
+  "why": "обновление Edge в этом проекте уже ломало автоматизацию: --dump-dom начал печатать пустоту. Поэтому мажорная версия строгая, а патч отслеживается",
+  "windows_build": "должна совпадать точно"
+ },
+ "failed_criteria": [],
+ "full_restarts": 1,
+ "individual_retries": 0,
+ "invalidated_by": [
+  "tools/validation/ui/run_ui_verification.py",
+  "tools/validation/ui/_ui_driver.mjs",
+  "tools/validation/ui/_stage_server.py",
+  "tools/validation/ui/network_guard/sitecustomize.py",
+  "tools/validation/ui/scenarios.json",
+  "tools/validation/ui/select_ui_coverage.py",
+  "tools/validation/ui/ui_coverage_map.json",
+  "формат обязательных assertions, порядок уборки процессов, сетевая политика"
+ ],
+ "limitations": [
+  "квалификация относится к ИНСТРУМЕНТУ, а не к продукту: доказательство конкретной задачи создаётся заново каждым UI-прогоном",
+  "покрыта только оболочка экрана настроек; содержимое панели, другие экраны, печать, очередь, принтеры, файлы, склад и модули не покрыты",
+  "адаптивность, зум и языковая матрица не покрыты",
+  "изолированный экземпляр всегда свежий: поведение на данных владельца не проверено"
+ ],
+ "network_guard_fingerprint": "96b954639c07bda1ead2a902e4a284895a4fa1502c94dec8943dbf99fa8d1902",
+ "not_invalidated_by": [
+  "изменения server.py, app/, web/, modules/ — они требуют НОВОГО прогона по задаче, но квалификацию инструмента не отменяют"
+ ],
+ "qualification_id": "uiq-20260801-054631-b6dd8e",
+ "qualified_application_modes": [
+  "static_harness",
+  "isolated_farm_manager"
+ ],
+ "qualified_at": "2026-08-01T05:50:56",
+ "qualified_environment": {
+  "engine_version": "150.0.4078.105",
+  "node_full": "v24.18.0",
+  "node_major": "24",
+  "python": "3.14",
+  "python_full": "3.14.5",
+  "windows_build": "10.0.19044"
+ },
+ "qualified_scenarios": [
+  "settings_panel_open_close",
+  "settings_panel_open_close_isolated"
+ ],
+ "scenario_registry_fingerprint": "4d3cde21724168ef2e4e9d27dd9dd11a52b1a44d1adaba8891bb4d9ef7155cbe",
+ "schema_version": "3diwell-ui-qualification-v1",
+ "series_proven_files": [
+  "tools/validation/ui/run_ui_verification.py",
+  "tools/validation/ui/_ui_driver.mjs",
+  "tools/validation/ui/_stage_server.py",
+  "tools/validation/ui/network_guard/sitecustomize.py",
+  "tools/validation/ui/scenarios.json"
+ ],
+ "series_proven_note": "Серия 3C доказала поведение именно этих пяти файлов; их отпечатки сверены с candidate_fingerprint_after.json серии. Файлы карты покрытия и её анализатора добавлены этапом 3D: серией они не проверялись, но закреплены здесь, чтобы их изменение аннулировало сертификат.",
+ "source_artifact_digest": "86e6b93033579c1b5586587d8a3b597013c687b33d89e907125d7a1d2bc0a279",
+ "source_series_id": "20260801-054631-b6dd8e",
+ "source_series_status": "QUALIFIED",
+ "tool_fingerprints": {
+  "tools/validation/ui/_stage_server.py": "a889fff55bf0388a2a81af449b330ce2e381d08b4ceaf8b6a699e55ee16e13d2",
+  "tools/validation/ui/_ui_driver.mjs": "4d26fcf682b8b63a7923b5949bc3788f67472ebb86bdf61d31ea260b331a0d7f",
+  "tools/validation/ui/network_guard/sitecustomize.py": "96b954639c07bda1ead2a902e4a284895a4fa1502c94dec8943dbf99fa8d1902",
+  "tools/validation/ui/run_ui_verification.py": "189017dc537bbb7975653f160782873908c2549135ac1f89e9bbd30698fc3228",
+  "tools/validation/ui/select_ui_coverage.py": "cc021e486ca819ab6bbf2053ef6908e645ff707e6c852279c962170f82896a76",
+  "tools/validation/ui/ui_coverage_map.json": "be08c176e71cca1d1982656c4f5d2a8c2ff11500d169a83e3c35fa654dc54f36"
+ },
+ "total_runs": 20
+}
