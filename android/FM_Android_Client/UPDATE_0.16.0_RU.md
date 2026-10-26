@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.16.0_EN.md)
+
 # FM Client 0.16.0 — что изменилось
 
 24.10.2026. Файл: `FM-Client-0.16.0.apk` (Google Диск → Projects → 3DMF → Release_3.0; копия — `C:\3DIWELL\modules`).

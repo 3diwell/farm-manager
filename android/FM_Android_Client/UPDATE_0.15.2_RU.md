@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.15.2_EN.md)
+
 # FM Android 0.15.2 — управление печатью и прогрев
 
 APK: `dist/FM-Client-0.15.2-debug.apk`. Android 8.0 или новее.

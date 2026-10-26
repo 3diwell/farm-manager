@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.5_EN.md)
+
 # FM Клиент 0.5 — проверка NFC на Redmi Note 14S
 
 Файл: `dist/FM-Client-0.5.0-debug.apk` (около 66 МиБ).

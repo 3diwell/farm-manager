@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.10_EN.md)
+
 # Farm Manager 0.10 — оформление
 
 ## Установка

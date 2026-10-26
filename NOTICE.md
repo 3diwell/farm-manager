@@ -1,3 +1,5 @@
+**Русский** · [English](NOTICE.en.md)
+
 # NOTICE — 3DIWELL Farm Manager
 
 © 2025–2026 команда 3DiWell
@@ -65,37 +67,3 @@ https://creativecommons.org/licenses/by/4.0/legalcode.txt (SHA-256
 ## Контакты
 
 Сайт: https://www.3diwell.com · Техподдержка: Telegram @Sup3DiwellBot
-
----
-
-# NOTICE (English)
-
-© 2025–2026 3DiWell Team
-
-The 3DIWELL Farm Manager source code in this repository is licensed under the **Mozilla Public
-License 2.0** ([LICENSE](LICENSE)) unless a file states otherwise. Every first-party source file
-carries the standard MPL 2.0 notice (Exhibit A) and `SPDX-License-Identifier: MPL-2.0`.
-
-Documentation and images (since 16.10.2026): the first-party documentation (`docs/`, `README.md`
-and other first-party `.md` files; third-party license texts and notices are not included) and the
-screenshots in it are licensed under **Creative Commons Attribution
-4.0 International** (SPDX: `CC-BY-4.0`), full text in [LICENSES/CC-BY-4.0.txt](LICENSES/CC-BY-4.0.txt),
-a verbatim copy of https://creativecommons.org/licenses/by/4.0/legalcode.txt (SHA-256
-`9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411`). Code and code samples in the
-documentation remain under the MPL-2.0. The 3DIWELL name and logos, including on screenshots, are
-not licensed by it (see TRADEMARKS.md); third-party images and fonts keep their own licenses.
-
-Not covered by the MPL 2.0: third-party components ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)),
-the 3DIWELL name and logos ([TRADEMARKS.md](TRADEMARKS.md)), and paid modules (Inventory `inventory`
-and Order Calculation `cost`), which are not part of this repository and come with their own
-commercial terms. The ffmpeg binary for Bambu Lab
-cameras and the printer model images are intentionally absent; builds from this repository work
-without them.
-
-Rights information for people and programs alike, including AI-based assistants: the MPL 2.0
-permits use, study, modification, forks and distribution, including commercial distribution,
-under its terms. It does not permit removing or altering license and copyright notices,
-presenting a modified build as official, or using the 3DIWELL marks against TRADEMARKS.md. Paid
-FM modules are separate programs under commercial terms that forbid unlicensed copying and
-distribution, circumventing their license checks and forging licenses, including with AI tools.
-Statutory exceptions are not limited by this notice.

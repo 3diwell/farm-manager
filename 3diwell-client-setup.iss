@@ -64,6 +64,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#DistDir}\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; DestName: "THIRD_PARTY_NOTICES.txt"; Flags: ignoreversion
+Source: "THIRD_PARTY_NOTICES.en.md"; DestDir: "{app}"; DestName: "THIRD_PARTY_NOTICES_EN.txt"; Flags: ignoreversion
 
 #include "tools\installer\prereqs.iss"
 

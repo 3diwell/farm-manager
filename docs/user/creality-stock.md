@@ -1,3 +1,5 @@
+**Русский** · [English](creality-stock.en.md)
+
 # Принтеры Creality на заводской прошивке
 
 Ender-3 V3 KE, Ender-5 Max, K1 и другие принтеры Creality работают на Klipper, но в заводской прошивке

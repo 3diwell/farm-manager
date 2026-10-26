@@ -1,3 +1,5 @@
+**Русский** · [English](README.en.md)
+
 # Инструкции для пользователя
 
 Относятся к 3DIWELL Farm Manager Beta 3.71.

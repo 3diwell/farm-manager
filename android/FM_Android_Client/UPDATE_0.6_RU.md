@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.6_EN.md)
+
 # FM Клиент 0.6 — пробное чтение заводской метки Bambu
 
 Файл: `dist/FM-Client-0.6.0-debug.apk`.

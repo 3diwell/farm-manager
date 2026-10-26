@@ -1,10 +1,10 @@
+**Русский** · [English](README.en.md)
+
 # 3DIWELL Farm Manager
 
 Программа управления фермой 3D-принтеров с одного экрана: проекты и детали, очередь и запуск
 печати, мониторинг принтеров Bambu Lab, FlashForge, Klipper/Moonraker и других, пользователи с
 ролями, резервные копии. Работает на компьютере фермы, без облака и без обязательного интернета.
-
-*English summary below.*
 
 ## Что есть в этом репозитории
 
@@ -59,22 +59,3 @@ python server.py
 
 Как сообщить об ошибке и предложить изменение — [CONTRIBUTING.md](CONTRIBUTING.md).
 Об уязвимостях — не в открытых обращениях, а как описано в [SECURITY.md](SECURITY.md).
-
----
-
-## English summary
-
-3DIWELL Farm Manager runs a 3D printer farm from one screen: projects and parts, print queue and
-launch, live monitoring of Bambu Lab, FlashForge, Klipper/Moonraker and other printers, users
-with roles and backups. It runs on the farm PC with no cloud and no mandatory internet.
-
-This repository holds the free open-source core (MPL 2.0), the free modules (quality analytics,
-messenger notifications, appearance and themes, camera wall), the offline signed-module and license foundation for paid
-modules, the FM Client Android app (`android/`), and demo modules for module developers. Paid modules are distributed separately under
-their own terms.
-
-Run from source with Python 3.14: `python -m pip install -r requirements.txt`, then
-`python server.py`, and open http://127.0.0.1:8000. License: [MPL 2.0](LICENSE); see
-[NOTICE.md](NOTICE.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and
-[TRADEMARKS.md](TRADEMARKS.md). Report vulnerabilities privately as described in
-[SECURITY.md](SECURITY.md).

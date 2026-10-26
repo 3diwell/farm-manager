@@ -1,3 +1,5 @@
+**Русский** · [English](CONTRIBUTING.en.md)
+
 # Как участвовать в 3DIWELL Farm Manager
 
 Спасибо, что хотите помочь. Ниже — как сообщить об ошибке, предложить изменение и проверить его.
@@ -57,16 +59,3 @@ https://mozilla.org/MPL/2.0/.
   требует отдельной проверки и описания в запросе.
 - Секреты, адреса настоящих принтеров и персональные данные в репозиторий не добавляются, в
   том числе в тестовые данные: только выдуманные значения (`FIXTURE_…`, адреса 192.0.2.x).
-
----
-
-# Contributing (English)
-
-Report bugs with the "Bug" issue template (program version, printer model and firmware, steps).
-Remove secrets from logs and backups first: FM logs and backups contain printer access codes,
-serials, network addresses and tokens by default. Report vulnerabilities privately (SECURITY.md).
-Discuss notable changes in an issue first, then open a pull request with tests. Contributions are
-accepted under the MPL 2.0; you confirm you have the right to submit them (MPL section 2.5). No
-copyright assignment is required. New first-party source files start with the MPL 2.0 notice
-shown above. Checks: `python tools/validation/select_profile.py --working-tree` lists the suites
-to run for your change.

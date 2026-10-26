@@ -1,3 +1,5 @@
+**Русский** · [English](TOUR_SELECTOR_AUDIT_EN.md)
+
 # 3DIWELL Farm Manager — ревизия селекторов обучения
 
 Дата проверки: 2026-06-29  

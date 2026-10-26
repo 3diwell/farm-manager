@@ -85,6 +85,7 @@ Source: "{#DistDir}\{#ShellExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; 26.09.2026: текст MPL 2.0 и перечень сторонних компонентов — рядом с программой (MPL 3.2).
 Source: "LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; DestName: "THIRD_PARTY_NOTICES.txt"; Flags: ignoreversion
+Source: "THIRD_PARTY_NOTICES.en.md"; DestDir: "{app}"; DestName: "THIRD_PARTY_NOTICES_EN.txt"; Flags: ignoreversion
 ; 26.09.2026: тексты лицензий сторонних компонентов, вшитых в программу (FFmpeg — GPL-3.0,
 ; изображения принтеров — AGPL-3.0, шрифты интерфейса — OFL-1.1), и примечания к ним: откуда
 ; компонент и где его исходный код. Ставятся в папку licenses рядом с программой.

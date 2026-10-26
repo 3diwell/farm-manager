@@ -1,3 +1,5 @@
+**Русский** · [English](ARCHITECTURE.en.md)
+
 # FM Android Client — решение и дальнейшее развитие
 
 ## Android 0.15.3: QR принтера и повтор последнего задания

@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.12.0_EN.md)
+
 # Android 0.12.0 — вход до 8 часов без изменения ядра
 
 Установите `dist/FM-Client-0.12.0-debug.apk` поверх установленного Farm Manager.

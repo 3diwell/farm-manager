@@ -1,3 +1,5 @@
+**Русский** · [English](IPHONE_THEME_NOTES_EN.md)
+
 # iPhone · Clear — Prototype 29
 
 Адаптация оформления iPhone для рабочего интерфейса FM. Ориентир: https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/ . Apple-ресурсы не включены; системный шрифт выбирается на устройстве пользователя.

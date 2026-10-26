@@ -1,3 +1,5 @@
+**Русский** · [English](SECURITY.en.md)
+
 # Сообщить об уязвимости
 
 Нашли уязвимость в 3DIWELL Farm Manager или его модулях — пожалуйста, **не публикуйте её в
@@ -35,23 +37,3 @@
 |---|---|
 | последняя 3.x | да |
 | более ранние | нет — обновитесь до последней 3.x |
-
----
-
-# Reporting a vulnerability (English)
-
-Please do **not** report vulnerabilities in public issues, discussions or chats. Use a private
-channel, in this order:
-
-1. **GitHub private vulnerability reporting** — the *Security* tab of the public repository →
-   *Report a vulnerability*. Available once the public repository is published; only its
-   maintainers see the report.
-2. **Telegram:** a private message to the 3DIWELL support bot **@Sup3DiwellBot** — available now,
-   and the fallback if the first channel is not available.
-
-Include the program version (About window), what happens, how to reproduce it and the impact. Do
-not send real printer access codes, passwords, tokens, license files or farm backups.
-
-Response targets: acknowledgement within 7 days; a fix for a critical vulnerability within 30 days
-of acknowledgement as a target (if it takes longer, we will say why and when to expect it).
-Security fixes are released for the latest 3.x version only.

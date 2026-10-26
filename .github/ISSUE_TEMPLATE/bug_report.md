@@ -9,11 +9,12 @@ labels: bug
 файлы лицензий (.fmlic), резервные копии и журналы без вычистки. Журналы и копии FM по умолчанию
 содержат такие сведения. Об уязвимостях — не здесь, а как написано в SECURITY.md.
 
-DO NOT post secrets here: printer access codes, serials, passwords, bot tokens, license files,
-unredacted backups or logs. Report vulnerabilities privately (SECURITY.md).
+DO NOT post secrets here: printer access codes, serial numbers, passwords, bot tokens,
+license files (.fmlic), backups and logs that have not been cleaned. FM logs and backups contain
+such data by default. Do not report vulnerabilities here; follow SECURITY.md instead.
 -->
 
-**Версия программы / App version** (окно «О программе» / About window):
+**Версия программы / App version** (окно «О программе» / the About window):
 
 **Принтер, модель и прошивка / Printer, model and firmware:**
 
@@ -25,4 +26,4 @@ unredacted backups or logs. Report vulnerabilities privately (SECURITY.md).
 
 **Что получили / What happened:**
 
-**Снимок экрана или часть журнала без секретов / Screenshot or redacted log excerpt:**
+**Снимок экрана или часть журнала без секретов / Screenshot or log excerpt without secrets:**

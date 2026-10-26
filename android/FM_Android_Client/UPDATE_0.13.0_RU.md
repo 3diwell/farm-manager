@@ -1,3 +1,5 @@
+**Русский** · [English](UPDATE_0.13.0_EN.md)
+
 # Farm Manager Android 0.13.0 — тема и язык
 
 Установите `dist/FM-Client-0.13.0-debug.apk` поверх 0.12.0. Не удаляйте приложение и данные.

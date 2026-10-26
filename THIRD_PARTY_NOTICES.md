@@ -1,3 +1,5 @@
+**Русский** · [English](THIRD_PARTY_NOTICES.en.md)
+
 THIRD_PARTY_NOTICES — сторонние компоненты 3DIWELL Farm Manager
 ==================================================================
 
@@ -6,13 +8,9 @@ THIRD_PARTY_NOTICES — сторонние компоненты 3DIWELL Farm Man
 подготовки этого файла (26.09.2026); точный состав конкретной сборки и полные тексты лицензий
 пакетов Python внутри программы — в файле licenses\THIRD_PARTY_LICENSES.txt в папке программы.
 
-Third-party components of 3DIWELL Farm Manager. First-party code is MPL-2.0 (LICENSE). The
-components below belong to their authors and are licensed under their own terms. Full license
-texts of the Python packages inside the program: licenses\THIRD_PARTY_LICENSES.txt.
 
-
-1. Внутри исходников / Inside the source tree
----------------------------------------------
+1. Внутри исходников
+--------------------
 
 - Vue 3.5.35 — web/vendor/vue.esm-browser.js
   MIT License, (c) 2018-present Yuxi (Evan) You and Vue contributors.
@@ -49,8 +47,8 @@ texts of the Python packages inside the program: licenses\THIRD_PARTY_LICENSES.t
   OpenBambuAPI. Код этих проектов не копировался.
 
 
-2. Внутри собранной программы / Bundled into the executables
-------------------------------------------------------------
+2. Внутри собранной программы
+-----------------------------
 
 В репозитории этих файлов нет: их добавляет сборка (PyInstaller).
 
@@ -79,16 +77,16 @@ texts of the Python packages inside the program: licenses\THIRD_PARTY_LICENSES.t
   собранные программы на любых условиях.
 
 
-3. Внутри установщика / Inside the installer
---------------------------------------------
+3. Внутри установщика
+---------------------
 
 - Microsoft Edge WebView2 Runtime и .NET Framework 4.8 — распространяются на условиях
   Microsoft для распространяемых компонентов. Установщик ставит их, только если их нет.
 - Установщик собран Inno Setup 6 — Inno Setup License, (c) Jordan Russell и Martijn Laan.
 
 
-4. Не входят в этот репозиторий / Not included in this repository
-------------------------------------------------------------------
+4. Не входят в этот репозиторий
+-------------------------------
 
 Официальные сборки могут дополнительно содержать материалы, которых в открытом репозитории нет.
 Тексты их лицензий и примечания — в папке licenses рядом с программой:
@@ -105,8 +103,8 @@ texts of the Python packages inside the program: licenses\THIRD_PARTY_LICENSES.t
 
 Сборка из открытого репозитория этих материалов не содержит и работает без них.
 
-5. Тексты лицензий значков / Icon license texts
------------------------------------------------
+5. Тексты лицензий значков
+--------------------------
 
 Часть значков web/design/icons.js нарисована по Feather, новые берутся с lucide.dev.
 

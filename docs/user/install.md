@@ -1,3 +1,5 @@
+**Русский** · [English](install.en.md)
+
 # Установка и обновление
 
 Относится к 3DIWELL Farm Manager Beta 3.71 (октябрь 2026).

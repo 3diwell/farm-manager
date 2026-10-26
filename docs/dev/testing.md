@@ -1,3 +1,5 @@
+**Русский** · [English](testing.en.md)
+
 # Проверки
 
 Проверки — обычные скрипты в `tools/`: `python tools/test_<имя>.py` или `node tools/test_<имя>.mjs`,
