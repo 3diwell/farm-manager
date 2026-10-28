@@ -17,7 +17,8 @@
   <a href="https://3diwell.com/fm_3d/ru/">Сайт и загрузки</a> ·
   <a href="https://github.com/3diwell/farm-manager/blob/main/docs/user/README.md">Руководство</a> ·
   <a href="https://3diwell.com/fm_3d/ru/#overview">Видеообзоры</a> ·
-  <a href="https://github.com/3diwell/farm-manager/issues">Сообщить об ошибке</a>
+  <a href="https://github.com/3diwell/farm-manager/issues">Сообщить об ошибке</a> ·
+  <a href="#поддержать-разработку">❤️ Поддержать разработку</a>
 </p>
 
 <p align="center">Windows 10/11 x64 · Локальная сеть · Бесплатное открытое ядро</p>
@@ -98,6 +99,14 @@ Voron 0 и RatRig относятся к протестированным кон�
 [Руководство пользователя](https://github.com/3diwell/farm-manager/blob/main/docs/user/README.md) · [Поддержка в Telegram](https://t.me/Sup3DiwellBot) · [Ошибки и предложения](https://github.com/3diwell/farm-manager/issues)
 
 При сообщении об ошибке укажите версию FM, модель принтера, шаги и ожидаемый результат. Об уязвимостях сообщайте по [правилам безопасности](https://github.com/3diwell/farm-manager/blob/main/SECURITY.md).
+
+## Поддержать разработку
+
+Ядро 3DIWELL Farm Manager бесплатно и имеет открытый исходный код. Добровольная поддержка помогает добавлять совместимость с новыми принтерами, тестировать оборудование, исправлять ошибки и улучшать документацию.
+
+Размер поддержки вы выбираете сами. Перевод не является покупкой или активацией лицензий на платные модули.
+
+**[Поддержать через YooMoney](https://yoomoney.ru/quickpay/fundraise/button?billNumber=1GBG2MLMK66.260307&)**
 
 <details>
 <summary><strong>Для разработчиков: состав и запуск из исходников</strong></summary>

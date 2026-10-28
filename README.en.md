@@ -17,7 +17,8 @@ Monitor printers, organize projects and manage print jobs from your farm compute
   <a href="https://3diwell.com/fm_3d/en/">Website &amp; downloads</a> ·
   <a href="https://github.com/3diwell/farm-manager/blob/main/docs/user/README.en.md">User guide</a> ·
   <a href="https://3diwell.com/fm_3d/en/#overview">Video walkthroughs</a> ·
-  <a href="https://github.com/3diwell/farm-manager/issues">Report an issue</a>
+  <a href="https://github.com/3diwell/farm-manager/issues">Report an issue</a> ·
+  <a href="#support-development">❤️ Support development</a>
 </p>
 
 <p align="center">Windows 10/11 x64 · Local network · Free, open-source core</p>
@@ -98,6 +99,14 @@ The current source version is **3.71 Beta** and is undergoing acceptance testing
 [User guide](https://github.com/3diwell/farm-manager/blob/main/docs/user/README.en.md) · [Telegram support](https://t.me/Sup3DiwellBot) · [Issues and suggestions](https://github.com/3diwell/farm-manager/issues)
 
 When reporting a problem, include your FM version, printer model, steps to reproduce and expected result. Report vulnerabilities according to the [security policy](https://github.com/3diwell/farm-manager/blob/main/SECURITY.en.md).
+
+## Support development
+
+The 3DIWELL Farm Manager core is free and open source. Voluntary contributions help us support more printers, test hardware, fix bugs, and improve documentation.
+
+You choose the amount. Contributions do not purchase or activate licences for paid modules.
+
+**[Support via PayPal](https://paypal.me/alexsteshov)**
 
 <details>
 <summary><strong>For developers: repository contents and running from source</strong></summary>
