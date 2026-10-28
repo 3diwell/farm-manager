@@ -106,7 +106,7 @@ Voron 0 и RatRig относятся к протестированным кон�
 
 Размер поддержки вы выбираете сами. Перевод не является покупкой или активацией лицензий на платные модули.
 
-**[Поддержать через YooMoney](https://yoomoney.ru/quickpay/fundraise/button?billNumber=1GBG2MLMK66.260307&)**
+**[❤️ Поддержать через YooMoney](https://yoomoney.ru/quickpay/fundraise/button?billNumber=1GBG2MLMK66.260307&)**
 
 <details>
 <summary><strong>Для разработчиков: состав и запуск из исходников</strong></summary>

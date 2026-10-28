@@ -106,7 +106,7 @@ The 3DIWELL Farm Manager core is free and open source. Voluntary contributions h
 
 You choose the amount. Contributions do not purchase or activate licences for paid modules.
 
-**[Support via PayPal](https://paypal.me/alexsteshov)**
+**[❤️ Support via PayPal](https://paypal.me/alexsteshov)**
 
 <details>
 <summary><strong>For developers: repository contents and running from source</strong></summary>
