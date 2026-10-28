@@ -14,6 +14,7 @@ export const SECTIONS = [
   {id:'panels',ru:'Карточки и эффекты',en:'Cards and effects',help:'Материал, форма и аккуратные световые акценты.',helpEn:'Materials, shapes and subtle light accents.'}
 ];
 export const GROUPS = [
+  {id:'dash-content',section:'dashboard',ru:'Содержимое карточки',en:'Card contents'},
   {id:'dash-water',section:'dashboard',ru:'Вода и движение',en:'Water and motion'},
   {id:'dash-status',section:'dashboard',ru:'Цвета состояний',en:'State colors'},
   {id:'dash-temp',section:'dashboard',ru:'Температуры',en:'Temperatures'},

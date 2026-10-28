@@ -13,15 +13,29 @@ const ACTIVE='data-fm-dash-active';
 const OWN='fm-ap-dash-own';
 const NS='http://www.w3.org/2000/svg';
 const prefix='--fm-ap-dash-';
-const vars=['base','water','text','state','heating','cooling','percent-size','time-size','period'];
+const vars=['base','water','text','state','heating','cooling','percent-size','time-size','temp-size','period'];
 export function dashboardCss(t) {
   if(!t.dashboard.enabled)return '';
-  const c=ROOT+' '+CARD+'['+ACTIVE+']';
+  const c=ROOT+' '+CARD+'['+ACTIVE+']',d=t.dashboard;
+  const hidden=[];
+  const hide=(key,...selectors)=>{if(d[key]===false)hidden.push(...selectors);};
+  hide('showName',c+' .pcd-name');
+  hide('showPercent',c+' .pcd-line>b',c+' .fm-ap-dash-percent');
+  hide('showTime',c+' .fm-ap-dash-time',c+' .pcd-line>[data-fm-dash-time-source]');
+  hide('showFile',c+':not(.pcd-offline) .pcd-file');
+  hide('showStatus',c+' .pcd-msg',c+' .pcd-st',c+'.pcd-print .pcd-line>span:not([data-fm-dash-time-source])');
+  hide('showIndicators',c+' .pcd-dot',c+' .pcd-hms',c+' .pcd-top>.ui3-qa');
+  hide('showHint',c+'.pcd-done .pcd-line>span');
+  hide('showAddress',c+'.pcd-offline .pcd-file');
+  hide('showProgressBar',c+' .pcd-bar');
+  for(const [i,key] of ['showNozzle','showBed','showChamber'].entries())hide(key,c+' .pcd-temps>span:nth-child('+(i+1)+')');
+  if(d.showNozzle===false&&d.showBed===false&&d.showChamber===false)hidden.push(c+' .pcd-temps');
+  if(d.showName===false&&d.showIndicators===false)hidden.push(c+'[data-fm-dash-percent="false"] .pcd-top:not(:has(button))');
   return `
 ${c}{background:var(--fm-ap-dash-base)!important;overflow:hidden!important;}
 ${c}>.pc-dash{position:relative;flex:1;min-width:0;}
 ${c} .pcd-top{padding-right:calc(var(--fm-ap-dash-percent-size) * 2.7 + 6px);flex-wrap:wrap;min-height:calc(var(--fm-ap-dash-percent-size) * 1.2);}
-${c}[data-fm-dash-percent="false"] .pcd-top{padding-right:0;}
+${c}[data-fm-dash-percent="false"] .pcd-top{padding-right:0;min-height:0;}
 ${c} .pcd-name{flex:1 1 40px;}
 ${c}[data-fm-dash-model="false"] .pcd-model{display:none!important;}
 ${c} .pcd-line>b,${c} .fm-ap-dash-percent{position:absolute;top:0;right:0;font-size:var(--fm-ap-dash-percent-size)!important;line-height:1.15;font-weight:650;letter-spacing:-.03em;color:var(--fm-text-primary)!important;font-variant-numeric:tabular-nums;pointer-events:none;}
@@ -33,7 +47,9 @@ ${c} .fm-ap-dash-time>span{font-size:14px!important;line-height:1.4;white-space:
 ${c} .pcd-file,${c} .pcd-line,${c} .pcd-model{color:var(--fm-ap-dash-text)!important;}
 /* 0.17.4: подпись состояния своего цвета, но читаемая на заливке (>= 4.5:1, как остальной текст карточки) */
 ${c}.pcd-error .pcd-msg,${c}.pcd-done .pcd-msg,${c}.pcd-paused .pcd-st{color:var(--fm-ap-dash-state)!important;}
-${c} .pcd-temps{flex-wrap:wrap;gap:4px 8px;}
+${c} .pcd-temps{flex-wrap:nowrap;justify-content:flex-start;min-width:0;gap:.4em;font-size:var(--fm-ap-dash-temp-size,10px)!important;white-space:nowrap;}
+${c} .pcd-temps>span{flex:0 0 auto;gap:.18em;font-size:inherit;white-space:nowrap;}
+${c} .pcd-temps svg{flex:0 0 auto;width:1.05em;height:1.05em;}
 ${c}[data-fm-dash-thermal="true"] .pcd-temps>span{color:var(--fm-ap-dash-text)!important;}
 /* 0.17.4: включённый нагреватель (класс .hot ядра) остаётся подсвеченным цветом нагрева, как без модуля */
 ${c}[data-fm-dash-thermal="true"] .pcd-temps>span.hot{color:var(--fm-ap-dash-heating)!important;}
@@ -51,6 +67,7 @@ ${c}[data-fm-dash-moving="false"] .fm-ap-dash-wave,html[data-fm-appearance-pause
 @keyframes fm-ap-dash-drift{from{transform:translateX(0)}to{transform:translateX(-33.3333333333%)}}
 @media(prefers-reduced-motion:reduce){${c} .fm-ap-dash-wave{animation:none!important;}}
 ${c} .fm-ap-dash-own[hidden]{display:none!important;}
+${hidden.length?hidden.join(",")+"{display:none!important;}":""}
 `;
 }
 function mix(a,b,t){const read=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),x=read(a),y=read(b);return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,'0')).join('');}
@@ -104,6 +121,16 @@ export function temperatureTrend(previous,value,now){
 const attr=(node,key,value)=>{const text=String(value);if(node.getAttribute(key)!==text)node.setAttribute(key,text);};
 const text=(node,value)=>{if(node.textContent!==value)node.textContent=value;};
 const variable=(node,key,value)=>{if(node.style.getPropertyValue(prefix+key)!==value)node.style.setProperty(prefix+key,value);};
+// Подгонка только видимых температур; иконки, цифры и стрелки масштабируются вместе.
+function fitTemperatures(card,dash){
+  const row=dash.querySelector('.pcd-temps');if(!row?.getBoundingClientRect)return;
+  variable(card,'temp-size','10px');
+  const available=row.getBoundingClientRect().width;
+  const boxes=[...row.children].filter(n=>n.tagName==='SPAN').map(n=>n.getBoundingClientRect()).filter(r=>r.width>0);
+  if(available<=0||!boxes.length)return;
+  const width=Math.max(...boxes.map(r=>r.right))-Math.min(...boxes.map(r=>r.left));
+  if(width>available)variable(card,'temp-size',(10*available/width*.99).toFixed(2)+'px');
+}
 function own(tag,cls){const node=document.createElement(tag);node.className=OWN+' '+cls;return node;}
 export function createDashboardCards(){
   const entries=new Map();let theme=null,frame=0,disposed=false,forcedPause=false;
@@ -159,12 +186,10 @@ export function createDashboardCards(){
         const base=tint(stateColor,p,st==='print'?.88:.7),water=tint(source,p,.42);
         const backgrounds=filled?[base,water]:[base];
         for(const [key,val] of Object.entries({base,water,text:ink(p.textSecondary,backgrounds),state:ink(st==='error'?d.error:st==='paused'?d.pause:st==='done'?d.green:p.textSecondary,backgrounds),heating:ink(d.heating,backgrounds),cooling:ink(d.cooling,backgrounds),'percent-size':d.percentSize+'px','time-size':d.timeSize+'px',period:d.wavePeriod+'s'}))variable(card,key,val);
-        attr(card,ACTIVE,'1');attr(card,'data-fm-dash-percent',show);attr(card,'data-fm-dash-model',d.showModel);attr(card,'data-fm-dash-thermal',d.temperatureColors);
+        attr(card,ACTIVE,'1');attr(card,'data-fm-dash-percent',show&&d.showPercent!==false);attr(card,'data-fm-dash-model',d.showModel);attr(card,'data-fm-dash-thermal',d.temperatureColors);
         attr(card,'data-fm-dash-water',d.water&&show);attr(card,'data-fm-dash-moving',d.motion&&!reduced&&st==='print'&&value>0&&value<100);
-        e.layer.hidden=!filled;e.percent.hidden=st!=='done'||!!originalPercent;text(e.percent,'100%');
+        e.layer.hidden=!filled;e.percent.hidden=d.showPercent===false||st!=='done'||!!originalPercent;text(e.percent,'100%');
         if(!e.percent.isConnected)dash.appendChild(e.percent);
-        const height=card.clientHeight||1;
-        attr(e.svg,'viewBox','0 0 600 '+height);attr(e.path,'d',dashboardWave(height,value,d.waveHeight));
         timeLabel(e,st);
         const current=new Set(st==='offline'?[]:dash.querySelectorAll('.pcd-temps>span'));
         for(const [node] of e.temperatures)if(!current.has(node)){node.removeAttribute('data-fm-dash-trend');e.temperatures.delete(node);}
@@ -174,6 +199,9 @@ export function createDashboardCards(){
           if(next)e.temperatures.set(node,next);else e.temperatures.delete(node);
           attr(node,'data-fm-dash-trend',next?.trend||'stable');
         }
+        fitTemperatures(card,dash);
+        const height=card.clientHeight||1;
+        attr(e.svg,'viewBox','0 0 600 '+height);attr(e.path,'d',dashboardWave(height,value,d.waveHeight));
       }
     }finally{if(!disposed)observe();}
   }

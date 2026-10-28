@@ -1054,7 +1054,8 @@
    "id": "claude-config",
    "component": "documentation",
    "globs": [
-    ".claude/**"
+    ".claude/**",
+    ".agents/**"
    ],
    "risk": "R0",
    "profile": "FAST",

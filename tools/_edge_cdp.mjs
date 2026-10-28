@@ -76,6 +76,7 @@ try {
     }), 'utf8');
   }
 } catch (e) {
+  console.error('CDP bridge: ' + String((e && e.message) || e));
   if (diagFile) {
     try { writeFileSync(diagFile, JSON.stringify({ bridgeError: String((e && e.message) || e) }), 'utf8'); }
     catch { /* нечего сообщить */ }

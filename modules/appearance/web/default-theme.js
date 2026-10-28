@@ -5,7 +5,7 @@
 // https://mozilla.org/MPL/2.0/.
 import { addExtensionDefaults } from "./theme-extensions.js";
 import { DASHBOARD_DEFAULTS } from './dashboard-settings.js';
-export const THEME_SCHEMA_VERSION = 13;
+export const THEME_SCHEMA_VERSION = 14;
 
 const DEFAULT_THEME = {
   dashboard: { ...DASHBOARD_DEFAULTS },

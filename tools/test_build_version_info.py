@@ -219,6 +219,9 @@ try:
         if os.path.isfile(c):
             iscc = c
             break
+    # Как и сборщик выпуска: изолированный LOCALAPPDATA не должен скрывать
+    # компилятор, установленный в другой папке и уже доступный через PATH.
+    iscc = iscc or shutil.which("ISCC")
     if not iscc:
         skip("5.3 пробный установщик", "нет ISCC.exe (Inno Setup 6)")
     else:

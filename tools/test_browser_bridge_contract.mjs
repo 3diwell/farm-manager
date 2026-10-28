@@ -70,7 +70,41 @@ for (const f of readdirSync(SCAN).filter((n) => n.endsWith('.mjs'))) {
 }
 check('B1. ни мост, ни один харнесс не передаёт --dump-dom как аргумент', offenders.length === 0, offenders);
 
-const { openStage, findEngine } = await import(pathToFileURL(LIBPATH).href);
+const { openStage, findEngine, readPort } = await import(pathToFileURL(LIBPATH).href);
+
+// Windows может держать DevToolsActivePort открытым во время записи. Исполняем
+// тот же читатель, что запускает браузер; подменено только чтение файла ОС.
+let portReads = 0;
+let recoveredPort = null;
+let portError = '';
+try {
+  recoveredPort = await readPort('FIXTURE_PROFILE', null, 2000, () => {
+    portReads++;
+    if (portReads <= 2) throw Object.assign(new Error('fixture locked'), { code: 'EBUSY' });
+    if (portReads === 3) throw Object.assign(new Error('fixture not created'), { code: 'ENOENT' });
+    if (portReads === 4) return '543'; // запись строки ещё не закончена
+    if (portReads === 5) return '65536\n'; // неверный номер не даёт ложную готовность
+    return '54321\n/devtools/browser/FIXTURE';
+  });
+} catch (e) { portError = String(e); }
+check('B9. временная блокировка и неполная запись порта пережидаются до настоящего результата',
+  recoveredPort === 54321 && portReads === 6, portError || { recoveredPort, portReads });
+
+let busyError = '';
+const busyStarted = Date.now();
+try {
+  await readPort('FIXTURE_PROFILE', null, 150, () => {
+    throw Object.assign(new Error('fixture always locked'), { code: 'EBUSY' });
+  });
+} catch (e) { busyError = String(e); }
+check('B10. постоянная блокировка даёт ограниченный по времени отказ с причиной',
+  /DevToolsActivePort/.test(busyError) && /EBUSY/.test(busyError) && Date.now() - busyStarted < 1500, busyError);
+
+const denied = Object.assign(new Error('fixture denied'), { code: 'EACCES' });
+let deniedError;
+try { await readPort('FIXTURE_PROFILE', null, 2000, () => { throw denied; }); }
+catch (e) { deniedError = e; }
+check('B11. постоянный отказ доступа не маскируется под ожидание браузера', deniedError === denied);
 
 // ── B3. Нет движка -> ОТКАЗ с причиной, а не «нечего проверять» ─────────────────────────────
 // Удалить Edge с машины нельзя, а подсунуть несуществующий путь недостаточно: findEngine при

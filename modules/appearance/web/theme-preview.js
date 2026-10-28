@@ -41,7 +41,12 @@ window.addEventListener('message',event=>{
       document.getElementById('sample-percent').hidden=['offline','error','idle'].includes(state);
       document.querySelector('.pcd-bar').hidden=['offline','error','idle','ready'].includes(state);
       document.querySelector('.pcd-temps').hidden=state==='offline';
-      document.getElementById('sample-time').textContent=state==='printing'?(ru?'1 ч 24 мин осталось':'1 h 24 min left'):state==='error'?(ru?'Проверьте принтер':'Check the printer'):state==='offline'?(ru?'Нет соединения':'No connection'):state==='ready'?(ru?'Задание завершено':'Job complete'):'';
+      const time=document.getElementById('sample-time'),file=document.getElementById('sample-file');
+      time.hidden=!['printing','selected','ready','paused'].includes(state);
+      time.classList.toggle('pcd-st',state==='paused');
+      time.textContent=['printing','selected'].includes(state)?(ru?'1 ч 24 мин осталось':'1 h 24 min left'):state==='ready'?(ru?'Освободите стол':'Clear the plate'):state==='paused'?(ru?'Пауза':'Paused'):'';
+      badge.hidden=['printing','selected','paused'].includes(state);
+      file.hidden=state==='idle';file.textContent=state==='offline'?'192.0.2.10':(ru?'Корпус · PETG':'Enclosure · PETG');
       document.getElementById('sample-printer-name').textContent=d.longNames?(ru?'Принтер мастерской · длинное название устройства и проекта':'Workshop printer · a long device and project name'):'Bambu P2S';
       // Playback speed belongs to the preview document, never to the theme.
       document.getAnimations?.().forEach(a=>{a.playbackRate=speed;});

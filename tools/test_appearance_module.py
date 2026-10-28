@@ -556,15 +556,30 @@ return new Promise(function(res){
           if (!doc) { out.err = 'no sample'; res(dump(out)); return; }
           var card = doc.querySelector('[data-sample="card"]');
           out.dashActive = card.getAttribute('data-fm-dash-active');
+          out.printingStatusHidden = doc.querySelector('[data-sample="status"]').hidden;
           function at(sel, fx, fy){ var n = doc.querySelector(sel); if (!n) return null; var r = n.getBoundingClientRect(); return [r.left + (fx < 0 ? r.width + fx : fx === 'c' ? r.width / 2 : fx), r.top + (fy === 'c' ? r.height / 2 : fy < 0 ? r.height + fy : fy)]; }
           var steps = [['time', at('.fm-ap-dash-time>strong', 4, 'c')], ['percent', at('#sample-percent', 'c', 'c')], ['temps', at('.pcd-temps>span', 'c', 'c')],
-                       ['timeRowEmpty', at('.pcd-line', -6, -4)], ['tempsRowEmpty', at('.pcd-temps', -6, 'c')], ['name', at('#sample-printer-name', 6, 'c')],
-                       ['status', at('[data-sample="status"]', 'c', 'c')]];
+                       ['timeRowEmpty', at('.pcd-line', -6, -4)], ['tempsRowEmpty', at('.pcd-temps', -6, 'c')], ['name', at('#sample-printer-name', 6, 'c')]];
           var cr = card.getBoundingClientRect();
           for (var gy = 0; gy < 10; gy++) for (var gx = 0; gx < 8; gx++) steps.push(['grid', [cr.left + 4 + (cr.width - 8) * (gx + .5) / 8, cr.top + 4 + (cr.height - 8) * (gy + .5) / 10]]);
           out.clicks = {}; out.grid = {};
           (function next(i){
-            if (i >= steps.length) { res(dump(out)); return; }
+            if (i >= steps.length) {
+              // 0.17.7 mirrors the real Dashboard: printing has no duplicate status badge.
+              // Exercise the status link in the error state, where the badge is visible.
+              var selector = ed.querySelector('select[aria-label="Состояние карточки"],select[aria-label="Card state"]');
+              if (!selector) { out.err = 'no sample-state selector'; res(dump(out)); return; }
+              selector.value = 'error'; selector.dispatchEvent(new Event('change', { bubbles: true }));
+              setTimeout(function(){
+                var status = doc.querySelector('[data-sample="status"]');
+                out.errorStatusVisible = !status.hidden && status.getBoundingClientRect().width > 0;
+                var xy = at('[data-sample="status"]', 'c', 'c'), el = xy && doc.elementFromPoint(xy[0], xy[1]);
+                lastSel = null;
+                if (el) el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                setTimeout(function(){ out.clicks.status = lastSel || 'none'; res(dump(out)); }, 100);
+              }, 800);
+              return;
+            }
             lastSel = null; var xy = steps[i][1], el = xy && doc.elementFromPoint(xy[0], xy[1]);
             if (el) el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
             setTimeout(function(){
@@ -601,6 +616,8 @@ for lang, size in (("ru", (1280, 800)), ("en", (853, 533))):
           and c.get("timeRowEmpty") == c.get("tempsRowEmpty") == "card" and c.get("name") == "text" and c.get("status") == "status", c)
     check("G11. %s: большая часть карточки образца ведёт к настройкам карточки (в 0.17.3 — 19%%)" % tag,
           g.get("card", 0) >= 60 and g.get("dashboard", 0) <= 12, g)
+    check("G12. %s: подпись состояния скрыта при печати и видна при ошибке, как на Dashboard" % tag,
+          r.get("printingStatusHidden") is True and r.get("errorStatusVisible") is True, r.get("err"))
 st.stop()
 
 # ════════════════════════════════════════════════════════════════════════════

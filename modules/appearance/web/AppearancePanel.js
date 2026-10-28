@@ -76,7 +76,7 @@ export default {
     const invalid=f=>validation.value.errors.some(code=>errorPath(code)===f.path&&(!code.startsWith('paletteEffects.')||code.startsWith('paletteEffects.'+paletteMode.value)));
     const visible=f=>enabled(f)||(f.linked&&theme.effects.animatedBackground!=='off')||forcedField.value===f.path;
     const sectionFields=(detail=false,group)=>FIELDS.filter(f=>f.section===tab.value&&!!f.advanced===detail&&(!group||f.group===group)&&visible(f));
-    const detailGroups=computed(()=>GROUPS.filter(g=>g.section===tab.value&&sectionFields(true,g.id).length));
+    const detailGroups=computed(()=>GROUPS.filter(g=>g.id!=='dash-content'&&g.section===tab.value&&sectionFields(true,g.id).length));
     const scope=f=>f.path.startsWith('palette.')||(theme.paletteEffects.separate&&PROFILE_PATHS[f.path])?(paletteMode.value==='dark'?L('Тёмная палитра','Dark palette'):L('Светлая палитра','Light palette')):L('Обе палитры','Both palettes');
     const groupSummary=g=>{
       const fields=sectionFields(true,g.id),changed=fields.filter(f=>JSON.stringify(read(f))!==JSON.stringify(original(f))).length;

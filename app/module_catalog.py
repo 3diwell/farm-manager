@@ -23,7 +23,7 @@
 import re
 
 KNOWN_MODULE_RELEASES = {
-    "appearance": "0.17.6",
+    "appearance": "0.17.7",
     "camera_wall": "0.4.4",
     "cost": "0.2.5",
     "inventory": "1.7.41",

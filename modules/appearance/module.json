@@ -2,7 +2,7 @@
   "id": "appearance",
   "ru": "Оформление и темы",
   "en": "Appearance and themes",
-  "version": "0.17.6",
+  "version": "0.17.7",
   "icon": "module",
   "entry": "web/AppearancePanel.js"
 }

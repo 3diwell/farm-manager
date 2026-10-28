@@ -28,6 +28,7 @@ import ast
 import os
 import sys
 import time
+from unittest import mock
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -169,8 +170,10 @@ check("13б. в пробу попадает итог последней наст
 
 print("")
 print("--- 3. проба не подвешивает кнопку диагностики ---")
-#  Настоящая проба по заведомо недостижимому адресу (RFC 5737 TEST-NET-1, маршрута нет): и служба 9999,
-#  и /info — настоящие функции программы, не заглушки.
+#  TEST-NET-1 может отвечать через VPN/маршрутизатор. Тайм-аут задаём на границе
+#  socket.create_connection, оставляя настоящими TCP/HTTP/WebSocket и всю диагностику.
+#  Ожидание длится ровно переданный программой timeout: последовательный или
+#  неограниченный опрос по-прежнему провалит проверку времени.
 import ssl as _ssl  # noqa: E402
 from app import creality_native as _cn_mod  # noqa: E402
 from app import creality_video as _cv_mod  # noqa: E402
@@ -187,22 +190,41 @@ ns2["_tcp_probe"] = _real_tcp
 for _fn in ("_creality_connect", "_cam_port", "_cam_tls_ctx", "_cam_service_query", "_cam_info", "_cam_service_probe",
             "_cam_info_probe", "_camera_http_head", "_camera_probe"):
     exec(grab(_fn), ns2)
-t0 = time.time()
-out = ns2["_camera_probe"](dict(P_K2, ip="192.0.2.1"), timeout=1.0)
-dt = time.time() - t0
-check("14. недостижимый принтер не подвешивает пробу (уложились в 6 с)", dt < 6.0, "%.1f с" % dt)
-check("15. при недостижимом принтере ни один путь не отмечен рабочим",
-      not any((v or {}).get("ok") or (v or {}).get("reachable") for v in (out or {}).values()), out)
-#  16.10.2026: «служба 9999 закрыта» запоминается только после ЯВНОГО отказа подключения и только при
-#  открытии камеры. Тайм-аут (принтер загружается, сбой Wi-Fi) не запоминается: иначе на 10 минут пропадал
-#  путь с токеном, и камера K2 с защитой видео не открывалась. Кнопка диагностики проверяет «сейчас».
-check("15а. недостижимый принтер (тайм-аут) не записан в «служба закрыта» — ни пробой диагностики, ни открытием камеры",
-      ("192.0.2.1", 9999) not in ns2["_CAM_9999_CLOSED"], dict(ns2["_CAM_9999_CLOSED"]))
-_q = ns2["_cam_service_query"]("192.0.2.1", 9999, want_token=False, wait=0.5)
-check("15б. тайм-аут при открытии камеры тоже не запоминается: следующая попытка снова спросит службу",
-      _q.get("error") == "TimeoutError" and ("192.0.2.1", 9999) not in ns2["_CAM_9999_CLOSED"]
-      and not ns2["_cam_service_query"]("192.0.2.1", 9999, want_token=False, wait=0.5).get("closed_cached"),
-      (_q, dict(ns2["_CAM_9999_CLOSED"])))
+_timeout_calls = []
+
+
+def _timeout_connect(address, timeout=None, *args, **kwargs):
+    _timeout_calls.append((address, timeout))
+    if address[0] != "192.0.2.1" or not isinstance(timeout, (int, float)) or not 0 < timeout <= 3.0:
+        raise AssertionError("unexpected destination or unbounded timeout: %r" % ((address, timeout),))
+    time.sleep(timeout)
+    raise TimeoutError("FIXTURE_CONNECTION_TIMEOUT")
+
+
+with mock.patch("socket.create_connection", side_effect=_timeout_connect), \
+        mock.patch.dict(os.environ, {"NO_PROXY": "*", "no_proxy": "*"}):
+    t0 = time.monotonic()
+    out = ns2["_camera_probe"](dict(P_K2, ip="192.0.2.1"), timeout=1.0)
+    dt = time.monotonic() - t0
+    check("14. недостижимый принтер не подвешивает пробу (уложились в 6 с)", dt < 6.0, "%.1f с" % dt)
+    check("15. при недостижимом принтере ни один путь не отмечен рабочим",
+          not any((v or {}).get("ok") or (v or {}).get("reachable") for v in (out or {}).values()), out)
+    #  16.10.2026: «служба 9999 закрыта» запоминается только после ЯВНОГО отказа подключения и только при
+    #  открытии камеры. Тайм-аут (принтер загружается, сбой Wi-Fi) не запоминается: иначе на 10 минут пропадал
+    #  путь с токеном, и камера K2 с защитой видео не открывалась. Кнопка диагностики проверяет «сейчас».
+    check("15а. недостижимый принтер (тайм-аут) не записан в «служба закрыта» — ни пробой диагностики, ни открытием камеры",
+          ("192.0.2.1", 9999) not in ns2["_CAM_9999_CLOSED"], dict(ns2["_CAM_9999_CLOSED"]))
+    _q = ns2["_cam_service_query"]("192.0.2.1", 9999, want_token=False, wait=0.5)
+    _q2 = ns2["_cam_service_query"]("192.0.2.1", 9999, want_token=False, wait=0.5)
+    check("15б. тайм-аут при открытии камеры тоже не запоминается: следующая попытка снова спросит службу",
+          _q.get("error") == _q2.get("error") == "TimeoutError"
+          and ("192.0.2.1", 9999) not in ns2["_CAM_9999_CLOSED"] and not _q2.get("closed_cached"),
+          (_q, _q2, dict(ns2["_CAM_9999_CLOSED"])))
+check("15г. TCP, HTTP и WebSocket реально дошли до транспорта с ограниченным timeout",
+      {int(a[1]) for a, _ in _timeout_calls} == {80, 443, 8000, 8080, 9999, 7125}
+      and all(a[0] == "192.0.2.1" and isinstance(t, (int, float)) and 0 < t <= 3.0
+              for a, t in _timeout_calls)
+      and sum(a[1] == 9999 for a, _ in _timeout_calls) == 3, _timeout_calls)
 import socket as _sock  # noqa: E402
 _s = _sock.socket()
 _s.bind(("127.0.0.1", 0))

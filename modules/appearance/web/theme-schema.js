@@ -4,7 +4,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at
 // https://mozilla.org/MPL/2.0/.
 export const MODULE_ID = 'appearance';
-export const MODULE_VERSION = '0.17.6';
+export const MODULE_VERSION = '0.17.7';
 export const SAVED_THEMES_KEY = 'fm_appearance_collection_v1';
 export const EDITOR_STATE_KEY = 'fm_appearance_editor_v1';
 export const DRAFT_STORAGE_KEY = 'fm_appearance_draft_v7';

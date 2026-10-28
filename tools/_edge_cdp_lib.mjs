@@ -330,17 +330,27 @@ export class CdpStage {
 // Код выхода запущенного msedge.exe НЕ признак отказа: Edge перезапускает себя другим процессом,
 // а родитель тут же выходит с кодом 0. Единственный надёжный признак живого CDP — файл
 // DevToolsActivePort в профиле.
-async function readPort(profile, child, timeoutMs) {
+export async function readPort(profile, child, timeoutMs, read = readFileSync) {
   const f = join(profile, 'DevToolsActivePort');
   const t0 = Date.now();
+  let last = '';
   while (Date.now() - t0 < timeoutMs) {
-    if (existsSync(f)) {
-      const first = readFileSync(f, 'utf8').split('\n')[0].trim();
-      if (/^\d+$/.test(first)) return parseInt(first, 10);
+    try {
+      // Edge ещё пишет файл: existsSync не защищает от EBUSY или неполной строки.
+      // Повторяем только чтение до прежнего срока; браузерные сценарии не пропускаем.
+      const data = read(f, 'utf8');
+      const first = data.split('\n')[0].trim();
+      const port = Number(first);
+      if (data.includes('\n') && /^\d+$/.test(first) && port > 0 && port <= 65535) return port;
+      last = 'неполная или неверная строка порта';
+    } catch (e) {
+      if (!['ENOENT', 'EBUSY'].includes(e.code)) throw e;
+      last = e.code;
     }
     await sleep(120);
   }
-  throw new Error('DevToolsActivePort не появился за ' + timeoutMs + 'ms (движок не поднял CDP)');
+  throw new Error('DevToolsActivePort не появился за ' + timeoutMs + 'ms (движок не поднял CDP)' +
+    (last ? ' [' + last + ']' : ''));
 }
 
 async function findTarget(port, timeoutMs) {

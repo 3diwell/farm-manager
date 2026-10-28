@@ -467,9 +467,16 @@ def run_layout(td, lang, bz, idx):
     io.open(pg, "w", encoding="utf-8", newline="\n").write(layout_page(lang, bz))
     prof = os.path.join(td, "p%d" % idx)
     # Alpha 2.834: --dump-dom в Edge 150 не отдаёт документ -> читаем DOM по CDP (tools/_edge_dom.py).
-    dom = _edge_dom.dump_dom_compatible(EDGE, "file:///" + pg.replace("\\", "/"), prof,
-                                        window_size=(1200, 800), budget_ms=4000)
-    m = re.search(r"@@RES@@(\{.*?\})@@END@@", dom, re.S)
+    diag = os.path.join(td, "diag_%d.json" % idx)
+    dom = _edge_dom.render_dom("file:///" + pg.replace("\\", "/"), edge=EDGE, profile_dir=prof,
+                               window_size=(1200, 800), settle_ms=4000, diag_path=diag)
+    m = re.search(r"@@RES@@(\{.*?\})@@END@@", dom or "", re.S)
+    if not m:
+        try:
+            with open(diag, encoding="utf-8") as fh:
+                print("Renderer diagnostics: " + json.dumps(json.load(fh), ensure_ascii=False)[:1600])
+        except (OSError, ValueError):
+            print("Renderer diagnostics: no diagnostic file; result remains a failure")
     return json.loads(m.group(1)) if m else None
 
 
